@@ -34,6 +34,7 @@ Universidad Nacional de Cuyo
 
 ## 📁 Project Structure
 
+```text
 ImuCalibration/
 ├── __init__.py
 ├── arduino code/
@@ -69,7 +70,7 @@ ImuCalibration/
 ├── README.md # This file
 ├── LICENSE # MIT License
 └── requirements.txt # Python dependencies
-
+```
 --
 
 ## 🚀 Quick Start
@@ -77,8 +78,8 @@ ImuCalibration/
 ### 1. 📥 Clone the Repository
 
 ```bash
-git clone https://github.com/your_username/imu_calibration.git
-cd imu_calibration
+git clone https://github.com/tomisuarez2/ImuCalibration
+cd ImuCalibration
 ```
 
 --
