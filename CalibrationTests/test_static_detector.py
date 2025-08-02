@@ -34,6 +34,7 @@ time_vector = np.arange(0, n_samples, 1) / sampling_freq
 # Plots
 fig, ax1 = plt.subplots()
 
+ax1.set_title("Static Interval Detector")
 ax1.plot(time_vector, accel_data)
 ax1.set_xlabel("Time [s]")
 ax1.set_ylabel("Raw Acceleration")
