@@ -49,6 +49,11 @@ ImuCalibration/
 ├── calibration data/
 │ └── example_data_calibration.csv # Example raw IMU data
 │ └── example_data_tinit_calc.csv # Example static IMU raw data for initial static time calculation
+├── optimization result images/
+│ └── cal_accel.png # Calibrated acceleration data
+│ └── cal_ang_vel.png # Calibrated angular velocity data
+│ └── non_cal_accel.png # Non calibrated acceleration data
+│ └── non_cal_ang_vel.png # Non alibrated angular velocity data
 ├── optimization result data/
 │ └── calibrated_accel_avg_data.csv # Example calibrated static acceleration data for gyroscope calibration
 │ └── params_acc.csv # Optimization result parameters for accelerometer calibration
@@ -98,6 +103,24 @@ pip install -r requirements.txt
 cd ImuCalibration
 python python -m CalibrationTests.test_complete_imu_calibration
 ```
+--
+
+## Example visualization
+
+For example, by running the above example you can obtain the following calibration:
+
+```bash
+Accelerometer optimized bias: [-711.51634223  358.50548361 1840.12845109]
+Accelerometer optimized scale factors: [0.00060201 0.00059684 0.00058592]
+Accelerometer optimized missalignments: [1.04386052e-05 2.09845282e-06 2.00598561e-06]
+Gyroscope optimized bias: [-427.46176147  147.94793701  -80.72266388]
+Gyroscope optimized scale factors: [0.00013737 0.00013292 0.00013394]
+Gyroscope optimized missalignments: [-0.00996739  0.00918384 -0.0029122  0.00723488 -0.00984196  0.00579592]
+```
+![Non calibrated accelerometer data](./optimization result images/non_cal_accel.png)
+![Calibrated accelerometer data](./optimization result images/cal_accel.png)
+![Non calibrated gyroscope data](./optimization result images/non_cal_accel.png)
+![Calibrated gyroscope data](./optimization result images/cal_accel.png)
 
 --
 
