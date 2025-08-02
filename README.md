@@ -122,9 +122,9 @@ Gyroscope optimized missalignments: [-0.00996739  0.00918384 -0.0029122  0.00723
 
 ![Calibrated accelerometer data](optimization%20result%20images/cal_accel.png)
 
-![Non calibrated gyroscope data](optimization%20result%20images/non_cal_accel.png)
+![Non calibrated gyroscope data](optimization%20result%20images/non_cal_ang_vel.png)
 
-![Calibrated gyroscope data](optimization%20result%20images/cal_accel.png)
+![Calibrated gyroscope data](optimization%20result%20images/cal_ang_vel.png)
 
 ![Static interval detector](optimization%20result%20images/static_detector_test.png)
 
