@@ -117,13 +117,13 @@ Gyroscope optimized bias: [-427.46176147  147.94793701  -80.72266388]
 Gyroscope optimized scale factors: [0.00013737 0.00013292 0.00013394]
 Gyroscope optimized missalignments: [-0.00996739  0.00918384 -0.0029122  0.00723488 -0.00984196  0.00579592]
 ```
-![Non calibrated accelerometer data](/optimization result images/non_cal_accel.png)
+![Non calibrated accelerometer data](optimization result images/non_cal_accel.png)
 
-![Calibrated accelerometer data](/optimization result images/cal_accel.png)
+![Calibrated accelerometer data](optimization result images/cal_accel.png)
 
-![Non calibrated gyroscope data](/optimization result images/non_cal_accel.png)
+![Non calibrated gyroscope data](optimization result images/non_cal_accel.png)
 
-![Calibrated gyroscope data](/optimization result images/cal_accel.png)
+![Calibrated gyroscope data](optimization result images/cal_accel.png)
 
 --
 
