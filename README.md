@@ -102,7 +102,7 @@ pip install -r requirements.txt
 
 ```bash
 cd ImuCalibration
-python python -m CalibrationTests.test_complete_imu_calibration
+python -m CalibrationTests.test_complete_imu_calibration
 ```
 --
 
