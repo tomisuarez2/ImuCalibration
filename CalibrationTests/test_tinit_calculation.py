@@ -12,7 +12,7 @@ from ImuCalibrationModules import imu_calibration as imu
 from ImuCalibrationModules.utils import extract_imu_data
 
 # IMU t_init calculation data filename
-file_name = "calibration data/example_data_tinit_calc.csv" 
+file_name = "calibration data/example_data_tinit_calc.csv"
 
 # Extract data
 params, data = extract_imu_data(file_name)

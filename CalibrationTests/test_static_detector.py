@@ -12,7 +12,7 @@ from ImuCalibrationModules import imu_calibration as imu
 from ImuCalibrationModules.utils import extract_imu_data
 
 # Read data
-file_name = "calibration data/example_data_calibration.csv" 
+file_name = "calibration data/example_data_calibration.csv"
 params, data = extract_imu_data(file_name)
 sampling_freq, _, t_init, t_wait = params
 n_samples = data.shape[0]

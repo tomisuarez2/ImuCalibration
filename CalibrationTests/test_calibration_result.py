@@ -11,7 +11,7 @@ from ImuCalibrationModules import imu_calibration as imu
 from ImuCalibrationModules.utils import extract_imu_data
 
 # Read data
-file_name = "results test data/imu_static_test.csv" 
+file_name = "results test data/imu_static_test.csv"
 params, data = extract_imu_data(file_name)
 fs, _ = params
 params_acc = np.loadtxt("optmization result data/params_acc.csv", delimiter=',')

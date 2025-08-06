@@ -2,7 +2,7 @@
 
 This project implements an automatic calibration method for Inertial Measurement Units (IMUs), based on the paper:
 
-> **A Robust and Easy to Implement Method for IMU Calibration without External Equipments**  
+> **A Robust and Easy to Implement Method for IMU Calibration without External Equipments**
 > Daniele Tedaldi, Andrea Pretto, Emanuele Menegatti – *IEEE ICRA 2014*
 
 The method is designed for low-cost IMUs like the **MPU-6050**, and requires **no external equipment**. It detects static data segments automatically and estimates sensor biases and calibration matrices.
@@ -23,9 +23,9 @@ The method is designed for low-cost IMUs like the **MPU-6050**, and requires **n
 
 ## 👨‍💻 Authors
 
-**Tomás Suárez, Agustín Corazza, Rodrigo Pérez**  
-Mechatronics Engineering Students 
-Universidad Nacional de Cuyo  
+**Tomás Suárez, Agustín Corazza, Rodrigo Pérez**
+Mechatronics Engineering Students
+Universidad Nacional de Cuyo
 📧 suareztomasm@gmail.com
 📧 corazzaagustin@gmail.com
 📧 rodrigoperez2110@gmail.com
@@ -38,9 +38,9 @@ Universidad Nacional de Cuyo
 ImuCalibration/
 ├── __init__.py
 ├── arduino code/
-│ ├── connection.jpeg # Connection diagram between Arduino UNO and MPU6050 
+│ ├── connection.jpeg # Connection diagram between Arduino UNO and MPU6050
 │ ├── MPU-6000-Register.pdf # MPU6050 registers file
-│ ├── MPU-6000.pdf # MPU6050 datasheet 
+│ ├── MPU-6000.pdf # MPU6050 datasheet
 │ ├── MPU6050_raw.ino # Arduino UNO code for MPU6050 raw values UART communication based on the specified connection
 ├── ImuCalibrationModules/
 │ ├── __init__.py
@@ -141,7 +141,7 @@ ax, ay, az, gx, gy, gz
 ax, ay, az: Accelerometer data (raw values)
 gx, gy, gz: Gyroscope data (raw values)
 
-Additional information as sampling frecuency, waiting time, number or moves and so on is also required.
+Additional information such as sampling frequency, waiting time, number of moves and so on is also required.
 
 --
 
@@ -177,7 +177,7 @@ To install the required libraries, download or clone them from the [ElectronicCa
 
 ### 👏 Acknowledgements
 
-This Arduino sketch is based on the excellent open-source library provided by [**Electronic Cats**](https://github.com/ElectronicCats/mpu6050).  
+This Arduino sketch is based on the excellent open-source library provided by [**Electronic Cats**](https://github.com/ElectronicCats/mpu6050).
 All rights and credits for the original `MPU6050` library belong to its authors.
 
 ---
