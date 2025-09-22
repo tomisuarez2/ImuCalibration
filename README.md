@@ -8,6 +8,7 @@ This project implements an automatic calibration method for Inertial Measurement
 The method is designed for low-cost IMUs like the **MPU-6050**, and requires **no external equipment**. It detects static data segments automatically and estimates sensor biases and calibration matrices.
 
 It also provides tools to **characterize and analyze the noise of all the imu sensors** using Allan Deviation analysis.
+
 ---
 
 ## 📌 Summary
