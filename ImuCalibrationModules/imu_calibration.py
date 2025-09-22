@@ -63,8 +63,8 @@ def simulate_sensor_data(
 #===========================================================
 
 def compute_allan_variance(
-    data: np.ndarray, 
-    fs: Union[int,float], 
+    data: np.ndarray,
+    fs: Union[int,float],
     m_steps: Literal['linear', 'exponential'] = 'linear'
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
@@ -91,14 +91,14 @@ def compute_allan_variance(
 
     # Generate interval lengths (tau in samples)
     if m_steps == 'linear':
-        max_m = n_samples // 2                   
-        taus = np.arange(2, max_m, dtype=int) 
+        max_m = n_samples // 2
+        taus = np.arange(2, max_m, dtype=int)
     elif m_steps == 'exponential':
         max_power = int(np.floor(np.log2(n_samples // 2)))
         taus = 2**np.arange(1, max_power + 1)
     else:
         raise ValueError("m_steps must be either 'linear' or 'exponential'")
-             
+
     # Pre-allocate array for Allan Variance resuts
     avar = np.empty((len(taus), data.shape[1]))
 
@@ -107,14 +107,14 @@ def compute_allan_variance(
         n_intervals = n_samples // tau
         reshaped = data[:n_intervals * tau].reshape(n_intervals, tau, -1)
 
-        # Compute means and differences 
+        # Compute means and differences
         interval_means = reshaped.mean(axis=1)
         diffs = np.diff(interval_means, axis=0)
 
         # Compute the Allan Variance
         avar[i] = 0.5 * np.mean(diffs**2, axis=0)
 
-    return taus / fs, avar  
+    return taus / fs, avar
 
 def auto_estimate_R_q_from_allan(
     tau: np.ndarray, 
@@ -267,9 +267,9 @@ def find_static_intervals_indices(
     return starts, ends
 
 def find_static_imu_intervals(
-    accel_data: np.ndarray, 
+    accel_data: np.ndarray,
     fs: Union[int, float],
-    t_wait: Union[int, float],    
+    t_wait: Union[int, float],
     threshold: Union[int, float],
     return_labels: bool=False
 ) -> Union[Tuple[np.ndarray, np.ndarray], Tuple[Tuple[np.ndarray, np.ndarray], np.ndarray]]:
@@ -280,7 +280,7 @@ def find_static_imu_intervals(
         accel_data: Input acceleration array data of shape (N, 3) where N is number of samples.
         fs: Sampling rate in Hz.
         threshold: Maximum allowed variance magnitude squared for static classification.
-        return_labels: If true returns static labels 
+        return_labels: If true returns static labels
 
     Returns:
         If return_labels=False:
@@ -290,7 +290,7 @@ def find_static_imu_intervals(
         Where:
             - starts: Array of start indices for each static interval
             - ends: Array of ends indices for each static interval
-            - static_labels: Binary array of shape (N,) where 1 indicates static periods and 0 indicates movement      
+            - static_labels: Binary array of shape (N,) where 1 indicates static periods and 0 indicates movement
 
     Notes:
         - The first and last half-windows periods are automatically marked as non-static
@@ -337,7 +337,7 @@ def compute_accel_averages(
         accel_data: Input acceleration array data of shape (N, 3) where N is number of samples.
 
     Returns:
-        Numpy array of shape (M,) containing averages of consecutive blocks of data where static_intervals 
+        Numpy array of shape (M,) containing averages of consecutive blocks of data where static_intervals
         has consecutive 1s
     """
     # Initialize average vector
@@ -345,17 +345,17 @@ def compute_accel_averages(
 
     # Computes the averages for each block
     for i, (start, end) in enumerate(zip(start_indices, end_indices)):
-        averages[i,:] = np.mean(accel_data[start:end,:], axis=0) 
-        
+        averages[i,:] = np.mean(accel_data[start:end,:], axis=0)
+
     return averages
 
 def apply_accel_calibration(
-    params: np.ndarray, 
+    params: np.ndarray,
     raw_data: np.ndarray
 ) -> np.ndarray:
     """
     Applies the Tedaldi et al. (2014) IMU calibration model to raw acceleration data.
-    
+
     Args:
         params: Calibration parameters array of shape (9,)
             [misalignment_yz, misalignment_zy, misalignment_zx,
@@ -367,7 +367,7 @@ def apply_accel_calibration(
         Calibrated acceleration data of shape (N, 3)
 
     Notes:
-        - Implements the model from: 
+        - Implements the model from:
           "A Robust and Easy to Implement Method for IMU Calibration without External Equipments"
         - The calibration model is: T @ K @ (raw + bias)
           where T is the misalignment matrix and K is the scaling matrix
@@ -394,12 +394,12 @@ def apply_accel_calibration(
     return (raw_data + bias) @ transformation.T
 
 def apply_gyro_calibration(
-    params: np.ndarray, 
+    params: np.ndarray,
     raw_data: np.ndarray
 ) -> np.ndarray:
     """
     Applies the Tedaldi et al. (2014) IMU calibration model to raw angular velocity data.
-    
+
     Args:
         params: Calibration parameters array of shape (9,)
             [misalignment_yz, misalignment_zy, misalignment_xz,
@@ -411,9 +411,9 @@ def apply_gyro_calibration(
         Calibrated angular velocity data of shape (N, 3)
 
     Notes:
-        - Implements the model from: 
+        - Implements the model from:
           "A Robust and Easy to Implement Method for IMU Calibration without External Equipments"
-        - The calibration model is: T @ K @ raw 
+        - The calibration model is: T @ K @ raw
           where T is the misalignment matrix and K is the scaling matrix
     """
     # Split parameters into components
@@ -432,14 +432,14 @@ def apply_gyro_calibration(
     # Pre-compute the combined transformation matrix
     transformation = T @ K
 
-    # Apply calibration in vectorized form: 
+    # Apply calibration in vectorized form:
     # Equivalent to: (transformation @ raw_data.T).T
 
     return raw_data @ transformation.T
 
 def accel_residuals(
-    params: np.ndarray, 
-    raw_accel_data: np.ndarray, 
+    params: np.ndarray,
+    raw_accel_data: np.ndarray,
     g: float=9.80665
 ) -> np.ndarray:
     """
@@ -463,7 +463,7 @@ def accel_residuals(
     # Compute vector norms (magnitud) of calibrated data
     accel_norm = np.linalg.norm(calibrated_accel_data, axis=1)
 
-    # Compute residuals 
+    # Compute residuals
     return g - accel_norm
 
 def gyro_residuals(
@@ -475,7 +475,7 @@ def gyro_residuals(
     fs: Union[int, float],
 ) -> np.ndarray:
     """
-    Compute residuals between calibrated static acceleration measurements and 
+    Compute residuals between calibrated static acceleration measurements and
     gyro-integrated estimates, according to Tedaldi et al. (2014).
 
     Args:
@@ -496,7 +496,7 @@ def gyro_residuals(
     n_intervals = len(start_idx) - 1
     time_vector = np.arange(0, n_samples, 1) / fs
     dt = 1.0 / fs
-    
+
     # Preallocate arrays
     residuals = np.empty((n_intervals, 3))
     norm_static_accel = np.empty((n_intervals, 3))
@@ -528,27 +528,27 @@ def gyro_residuals(
         # Compute residuals
         residuals[i] = norm_static_accel[i+1,:] - norm_integrated_accel[i,:]
 
-    return residuals.flatten() 
+    return residuals.flatten()
 
 def calibrate_accel_from_data(
-    t_init: Union[int, float], 
-    t_wait: Union[int, float], 
-    raw_accel_data: np.ndarray, 
-    fs: Union[int, float], 
-    theta_init_acc: Optional[np.ndarray]=None, 
+    t_init: Union[int, float],
+    t_wait: Union[int, float],
+    raw_accel_data: np.ndarray,
+    fs: Union[int, float],
+    theta_init_acc: Optional[np.ndarray]=None,
     g: float=9.80665,
     n_iteration: int=200
 ) -> Tuple[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
     """
     Optimized accelerometer calibration using iterative threshold adjustment as presented in
     Tedaldi et al. (2014).
- 
+
     Args:
         t_init: Initial static time interval for IMU initialization (s)
         t_wait: Static time interval for calibration (s)
         raw_accel_data: Raw acceleration array of shape (N, 3)
         fs: Sampling rate in Hz.
-        theta_init_acc: Initial calibration parameters (9,) 
+        theta_init_acc: Initial calibration parameters (9,)
         g: Reference gravity magnitude (default: 9.80665 m/s²)
         n_iterations: Maximum iterations
 
@@ -578,12 +578,12 @@ def calibrate_accel_from_data(
         threshold = k * zitta_init_sq
         starts, ends = find_static_imu_intervals(raw_accel_data, fs, t_wait, threshold)
         avg_accel = compute_accel_averages(starts, ends, raw_accel_data)
-        n_static_samples = avg_accel.shape[0]    
+        n_static_samples = avg_accel.shape[0]
 
         # Check for sufficient unique orientations
         if n_static_samples > 9:
             rel_diffs = np.abs(avg_accel[1:,:] - avg_accel[:-1,:])
-            magnitudes = np.linalg.norm(avg_accel[1:,:], axis=1, keepdims=True)  
+            magnitudes = np.linalg.norm(avg_accel[1:,:], axis=1, keepdims=True)
             if not np.any(np.all(rel_diffs/magnitudes < tol, axis=1)):
                 k_real += 1
                 # Levenberg-Marquardt accelerometer parameters optimization
@@ -596,11 +596,11 @@ def calibrate_accel_from_data(
                 # Early termination if no improvement
                 if k_real > 50 and Minf[-1][0] > Minf[-2][0]:
                     break
-    
+
     # Find optimal parameters
     if not Minf:
         raise RuntimeError("No valid static intervals found for calibration")
-    
+
     optimal_idx = np.argmin(np.array([result[0] for result in Minf]))
     params_acc = Minf[optimal_idx][1]
     static_intervals = Minf[optimal_idx][3]
@@ -609,18 +609,18 @@ def calibrate_accel_from_data(
     return params_acc, static_intervals
 
 def calibrate_gyro_from_data(
-    t_init: Union[int, float], 
+    t_init: Union[int, float],
     static_accel_data: np.ndarray,
-    raw_gyro_data: np.ndarray, 
-    fs: Union[int, float], 
-    start_indices: np.ndarray, 
+    raw_gyro_data: np.ndarray,
+    fs: Union[int, float],
+    start_indices: np.ndarray,
     end_indices: np.ndarray,
-    theta_init_gyro: Optional[np.ndarray]=None, 
+    theta_init_gyro: Optional[np.ndarray]=None,
 ) -> np.ndarray:
     """
     Optimized gyroscope calibration using calibrated static acceleration vectors as presented in
     Tedaldi et al. (2014).
- 
+
     Args:
         t_init: Initial static time interval for IMU initialization (s)
         static_accel_data: Calibrated static acceleration array of shape (M, 3)
@@ -628,7 +628,7 @@ def calibrate_gyro_from_data(
         fs: Sampling rate in Hz.
         start_indices: Array of start indices for each static interval
         end_indices: Array of ends indices for each static interval
-        theta_init_gyro: Initial calibration parameters (9,) 
+        theta_init_gyro: Initial calibration parameters (9,)
 
     Returns:
         Array:
@@ -654,7 +654,7 @@ def calibrate_gyro_from_data(
 
     # Gyroscope parameters optimization
     result = least_squares(fun=gyro_residuals, x0=theta_init_gyro,
-                           args=(static_accel_data, unbiased_gyro_data, start_indices, end_indices, fs), 
+                           args=(static_accel_data, unbiased_gyro_data, start_indices, end_indices, fs),
                            method='lm', max_nfev=2000)
 
     print(">>> Gyroscope calibration finished")
@@ -662,11 +662,11 @@ def calibrate_gyro_from_data(
     return np.hstack([result.x, bias])
 
 def calibrate_imu_from_data(
-    t_init: Union[int, float], 
-    t_wait: Union[int, float], 
-    data: np.ndarray, 
-    fs: Union[int, float], 
-    theta_init_acc: Optional[np.ndarray]=None, 
+    t_init: Union[int, float],
+    t_wait: Union[int, float],
+    data: np.ndarray,
+    fs: Union[int, float],
+    theta_init_acc: Optional[np.ndarray]=None,
     theta_init_gyro: Optional[np.ndarray]=None,
     g: float=9.80665,
     n_iteration: int=200,
@@ -674,7 +674,7 @@ def calibrate_imu_from_data(
     save_data_flag: bool=False,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
-    Optimized imu calibration (accelerometer and gyroscope) using iterative threshold adjustment 
+    Optimized imu calibration (accelerometer and gyroscope) using iterative threshold adjustment
     for accelerometer and calibrated static acceleration vectors for gyroscope as presented in
     Tedaldi et al. (2014).
 
@@ -683,8 +683,8 @@ def calibrate_imu_from_data(
         t_wait: Static time interval for calibration (s)
         data: Raw acceleration and gyroscope data array of shape (N, 6)
         fs: Sampling rate in Hz.
-        theta_init_acc: Initial calibration parameters (9,) 
-        theta_init_gyro: Initial calibration parameters (9,) 
+        theta_init_acc: Initial calibration parameters (9,)
+        theta_init_gyro: Initial calibration parameters (9,)
         g: Reference gravity magnitude (default: 9.80665 m/s²)
         n_iterations: Maximum iterations
         show_data_flag: Show data, both console and plots
@@ -696,7 +696,7 @@ def calibrate_imu_from_data(
             - [misalignment_yz, misalignment_zy, misalignment_zx,
                scale_x, scale_y, scale_z,
                bias_x, bias_y, bias_z]
-        - Optimal accelerometer calibration parameters (12,)
+        - Optimal gyroscope calibration parameters (12,)
             - [misalignment_yz, misalignment_zy, misalignment_xz,
                misalignment_zx, misalignment_xy, misalignment_yx,
                scale_x, scale_y, scale_z, bias_x, bias_y, bias_z]
@@ -706,20 +706,20 @@ def calibrate_imu_from_data(
     raw_gyro_data = data[:,3:]
 
     # Optimized acceleromater calibration parameters
-    params_acc, (starts, ends) = calibrate_accel_from_data(t_init, t_wait, 
+    params_acc, (starts, ends) = calibrate_accel_from_data(t_init, t_wait,
                                                            raw_accel_data, fs,
                                                            theta_init_acc, g,
                                                            n_iteration)
-    
+
     # Compute calibrated static acceleration data
     static_accel_data = compute_accel_averages(starts, ends, raw_accel_data)
     calibrated_accel_avg_data = apply_accel_calibration(params_acc, static_accel_data)
 
     # Optimized gyroscope calibration parameters
-    params_gyro = calibrate_gyro_from_data(t_init, calibrated_accel_avg_data, 
-                                           raw_gyro_data, fs, starts, 
+    params_gyro = calibrate_gyro_from_data(t_init, calibrated_accel_avg_data,
+                                           raw_gyro_data, fs, starts,
                                            ends, theta_init_gyro)
-    
+
     if save_data_flag:
         np.savetxt("optmization result data/params_acc.csv", params_acc, delimiter=',')
         np.savetxt("optmization result data/calibrated_accel_avg_data.csv", calibrated_accel_avg_data, delimiter=',')
@@ -750,17 +750,17 @@ def calibrate_imu_from_data(
         # Show data plots
         show_data(data, fs, params_acc, params_gyro, "calibration")
 
-    return params_acc, params_gyro  
+    return params_acc, params_gyro
 
 def show_data(
-    data: np.ndarray, 
-    fs: Union[int,float], 
+    data: np.ndarray,
+    fs: Union[int,float],
     params_acc: np.ndarray,
     params_gyro: np.ndarray,
     title: str
 ) -> None:
     """
-    Show IMU data in different plots of raw and calibrated data, applying calibration models as 
+    Show IMU data in different plots of raw and calibrated data, applying calibration models as
     presented in Tedaldi et al. (2014).
 
     Args:
@@ -768,7 +768,7 @@ def show_data(
             - data[:,:3]: acceleration data
             - data[:,3:]: angular velocity data
         fs: Sampling rate in Hz.
-        params_acc: Accelerometer calibration parameters (9,) 
+        params_acc: Accelerometer calibration parameters (9,)
         params_gyro: Gyroscope calibration parameters (12,)
         title: Data title
 

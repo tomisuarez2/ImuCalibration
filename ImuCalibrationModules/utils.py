@@ -26,13 +26,13 @@ def log_data_from_imu(
     t_avar: Union[int, float, None] = None
 ) -> str:
     """
-    Log data from an MPU6050 IMU via UART communication. 
+    Log data from an MPU6050 IMU via UART communication.
     You will need "MPU6050_raw.ino" code in Arduino UNO and connected as shown in "connections.jpeg",
     you can find both files in "arduino code" folder.
     Supports three logging modes:
     1. Data logging for IMU calibration (log_type=0)
     2. Data logging for TINIT computation using Allan Variance (log_type=1)
-        - This mode can be also used as a free loggig data type, setting "t_avar" 
+        - This mode can be also used as a free loggig data type, setting "t_avar"
           as long as desired logging time
 
     Args:
@@ -85,7 +85,7 @@ def log_data_from_imu(
             if line:
                 data = [int(val) for val in line.split(',')]
                 if len(data) == 6:
-                    writer.writerow(data)   
+                    writer.writerow(data)
         except (ValueError, UnicodeDecodeError) as e:
             error_data += 1
             if error_data % 100 == 0: # Only print periodic error to avoid flooding
@@ -110,14 +110,14 @@ def log_data_from_imu(
                 elif response == "MPU6050 connection failed":
                     raise RuntimeError("MPU6050 connection failed")
 
-            # Get sampling frecuency
+            # Get sampling frequency
             while True:
                 response = ser.readline().decode('utf-8').strip()
-                if response.startswith("Computing sample rate frecuency"):
+                if response.startswith("Computing sample rate frequency"):
                     sampling_freq = ser.readline().decode('utf-8').strip().split()[1]
                     break
 
-            print(f">>> Sampling frecuency: {sampling_freq} Hz")
+            print(f">>> Sampling frequency: {sampling_freq} Hz")
 
             # Initialize CSV file
             writer = csv.writer(csvfile)
@@ -141,7 +141,7 @@ def log_data_from_imu(
             while True:
                 if ser.readline().decode('utf-8').strip() == "Getting raw data...":
                     break
-            
+
             # Main data collection
             t_static_start = time.time()
             while time.time() - t_static_start < log_time:
@@ -151,7 +151,7 @@ def log_data_from_imu(
             if not log_type:
                 for move_num in range(1, n_moves + 1):
                     print(f"\n>>> Move IMU to new position ({move_num}/{n_moves})")
-                    
+
                     # Movement period
                     t_move_start = time.time()
                     while time.time() - t_move_start < t_move:
@@ -207,11 +207,11 @@ def extract_imu_data(
         with open(file_name, 'r', newline='') as csvfile:
             reader = csv.reader(csvfile)
             metadata = [next(reader) for _ in range(4)]
-            
+
         # Convert metadata with proper error handling
         fs = float(metadata[0][1])
         log_type = int(metadata[1][1])
-        
+
         params = [fs, log_type]
         if log_type == 0:
             params.extend([
@@ -237,7 +237,7 @@ def quaternion_rate_of_change(
     Computes the time derivative of a quaternion given current orientation and angular velocity.
 
     Args:
-        quat: Current orientation quaternion [w, x, y, z] as array of shape (4,) 
+        quat: Current orientation quaternion [w, x, y, z] as array of shape (4,)
         ang_vel: Angular velocity vector [w1, w2, w3] (rad/s) as array of shape (3,)
 
     Returns:
@@ -246,7 +246,7 @@ def quaternion_rate_of_change(
     Notes:
         - Implements the standard quaternion kinematics equation
 
-    """    
+    """
     # Angular velocity components
     w1, w2, w3 = ang_vel
 
@@ -270,7 +270,7 @@ def integrate_quaternion(
     Args:
         angular_velocity: Callable returning angular velocity vector (rad/s) at time t
         t_span: Integration time range (t_start, t_end)
-        q0: Initial orientation quaternion as array of shape (4,) 
+        q0: Initial orientation quaternion as array of shape (4,)
         dt: step time
         return_sequence: Whether to return full integration history
 
@@ -280,7 +280,7 @@ def integrate_quaternion(
     """
     # Calculate number of steps and preallocate if needed
     t_points = np.arange(t_span[0], t_span[1] + dt, dt)
-    
+
     if return_sequence:
         q_sequence = np.empty((len(t_points), 4))
         q_sequence[0] = q0
@@ -303,6 +303,7 @@ def integrate_quaternion(
     if return_sequence:
         return t_points, q_sequence
     return q_current
+<<<<<<< HEAD
 
 def show_loglog_data(
     x_data: np.ndarray,
@@ -376,9 +377,13 @@ def show_time_data(
     
 
     
+=======
+>>>>>>> 5119d7a851caa3b1b0b8ed5c32f905a2cf959b6a
 
 
 
-    
 
-   
+
+
+
+

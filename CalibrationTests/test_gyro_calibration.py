@@ -18,7 +18,7 @@ save = False
 g = 9.80665
 
 # Read data
-file_name ="calibration data/example_data_calibration.csv" 
+file_name ="calibration data/example_data_calibration.csv"
 params, data = extract_imu_data(file_name)
 sampling_freq, _, t_init, t_wait = params
 n_samples = data.shape[0]
@@ -34,8 +34,8 @@ starts, ends = np.loadtxt("optmization result data/static_intervals.csv", delimi
 raw_gyro_data = data[:,3:]
 
 # Calibrate gyroscope
-theta_opt_gyro = imu.calibrate_gyro_from_data(t_init, calibrated_accel_avg_data, 
-                                              raw_gyro_data, sampling_freq, starts, 
+theta_opt_gyro = imu.calibrate_gyro_from_data(t_init, calibrated_accel_avg_data,
+                                              raw_gyro_data, sampling_freq, starts,
                                               ends)
 
 # Optimization parameters

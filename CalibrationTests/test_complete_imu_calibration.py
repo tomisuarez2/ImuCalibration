@@ -23,8 +23,8 @@ n_samples = data.shape[0]
 print(f"Number of samples in the calibration data file: {n_samples}")
 
 # Calibrate IMU
-params_acc, params_gyro = imu.calibrate_imu_from_data(t_init, t_wait, data, 
-                                                      samp_freq, g=gravity, 
+params_acc, params_gyro = imu.calibrate_imu_from_data(t_init, t_wait, data,
+                                                      samp_freq, g=gravity,
                                                       show_data_flag=True, save_data_flag=True)
 
 

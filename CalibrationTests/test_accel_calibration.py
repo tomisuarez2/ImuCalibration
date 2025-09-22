@@ -18,7 +18,7 @@ save = True
 g = 9.80665
 
 # Read data
-file_name = "calibration data/example_data_calibration.csv" 
+file_name = "calibration data/example_data_calibration.csv"
 params, data = extract_imu_data(file_name)
 sampling_freq, _, t_init, t_wait = params
 n_samples = data.shape[0]
@@ -28,10 +28,10 @@ print(f"Number of samples in the file: {n_samples}")
 raw_accel_data = data[:,:3]
 
 # Calibrate accelerometer
-theta_opt_acc, (starts, ends) = imu.calibrate_accel_from_data(t_init, t_wait, 
+theta_opt_acc, (starts, ends) = imu.calibrate_accel_from_data(t_init, t_wait,
                                                               raw_accel_data, sampling_freq)
 
-# Static acceleration data 
+# Static acceleration data
 raw_accel_avg_data = imu.compute_accel_averages(starts, ends, raw_accel_data)
 
 # Optimization parameters

@@ -3,7 +3,7 @@ IMU logging data test
 Authors: Tomás Suárez, Agustín Corazza, Rodrigo Pérez
 University: Universidad Nacional de Cuyo
 Based on: "A Robust and Easy to Implement Method for IMU Calibration without External Equipments" - Tedaldi et al., 2014
-For this example we use an arduino UNO connected with a MPU6050 imu as indicated in "connection.jpeg" with 
+For this example we use an arduino UNO connected with a MPU6050 imu as indicated in "connection.jpeg" with
 "MPU6050_raw.ino" code, both found in "arduiono code" folder.
 """
 
