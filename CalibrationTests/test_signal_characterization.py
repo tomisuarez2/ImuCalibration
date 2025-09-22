@@ -15,7 +15,7 @@ synthetic = False
 save = True
 
 # Read data
-file_name = "characterization data/imu_data_21_09_2025_22_46_tinit.csv" 
+file_name = "characterization data/imu_static_data_6h.csv" 
 params, imu_data = extract_imu_data(file_name)
 sampling_freq, t_init = params
 n_samples = imu_data.shape[0]
