@@ -303,7 +303,6 @@ def integrate_quaternion(
     if return_sequence:
         return t_points, q_sequence
     return q_current
-<<<<<<< HEAD
 
 def show_loglog_data(
     x_data: np.ndarray,
@@ -377,8 +376,6 @@ def show_time_data(
     
 
     
-=======
->>>>>>> 5119d7a851caa3b1b0b8ed5c32f905a2cf959b6a
 
 
 
