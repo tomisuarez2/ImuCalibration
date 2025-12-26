@@ -508,8 +508,8 @@ These relationships allow estimation of $R$ and $q$ directly from logged data.
 * Estimated noise parameters:
 
  ```bash
->>> Y axis accelerometer white measurement–noise variance [m^4/s^2]: 0.000927991675334452
->>> Y axis accelerometer bias random–walk intensity [m^4/s^3]: nan
+>>> Y axis accelerometer white measurement–noise variance [m^2/s^4]: 0.000927991675334452
+>>> Y axis accelerometer bias random–walk intensity [m^2/s^5]: nan
 >>> Y axis gyroscope white measurement–noise variance [rad^2/s^2]: 4.9340091913017585e-06
 >>> Y axis gyroscope bias random–walk intensity [rad^2/s^3]: nan
  ```
