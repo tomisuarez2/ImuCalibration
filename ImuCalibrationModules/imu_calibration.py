@@ -201,6 +201,7 @@ def auto_estimate_R_q_from_allan(
         idx = range(reg_w[0], reg_w[1]+1)
         _, intercept_w, *_ = linregress(logtau[idx], logsig[idx])
         # Model: sigma = sqrt(R)/sqrt(tau) => log10(sigma) = -0.5*log10(tau) + log10(sqrt(R/fs))
+        print(intercept_w)
         sqrtR_fs = 10**intercept_w
         R = (sqrtR_fs**2) * fs
         tau_white = (tau[idx[0]], tau[idx[-1]])
