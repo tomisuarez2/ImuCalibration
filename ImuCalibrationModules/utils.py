@@ -15,6 +15,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.spatial.transform import Rotation
 
+plt.style.use("seaborn-whitegrid")
+plt.rcParams['font.family'] = 'Times New Roman'
+
 def log_data_from_imu(
     port: str,
     baud_rate: int,
@@ -23,7 +26,8 @@ def log_data_from_imu(
     t_wait: Union[int, float, None] = None,
     t_move: Union[int, float, None] = None,
     n_moves: int=10,
-    t_avar: Union[int, float, None] = None
+    t_avar: Union[int, float, None] = None,
+    spanish: bool=False
 ) -> str:
     """
     Log data from an MPU6050 IMU via UART communication.
@@ -44,6 +48,7 @@ def log_data_from_imu(
         t_move: Moving time interval for calibration (required when log_type=0)
         n_moves: Number of static positions for calibration (default=10)
         time_avar: Logging duration for Allan Variance (required when log_type=1)
+        spanish: Spanish comments
 
     Returns:
         str: Filename of the generated CSV file containing logged data
@@ -99,8 +104,12 @@ def log_data_from_imu(
 
     try:
         with serial.Serial(port, baud_rate, timeout=1) as ser, open(output_file, 'w', newline='') as csvfile:
-            print(f"Connected to {port}.")
-            print(">>> Waiting for IMU initialization...")
+            if spanish:
+                print(f">>> Conectado al puerto {port}.")
+                print(">>> Esperando inicialización de la IMU...")
+            else:
+                print(f">>> Connected to {port}.")
+                print(">>> Waiting for IMU initialization...")
 
             # Wait for MPU6050 connection confirmation
             while True:
@@ -117,7 +126,10 @@ def log_data_from_imu(
                     sampling_freq = ser.readline().decode('utf-8').strip().split()[1]
                     break
 
-            print(f">>> Sampling frequency: {sampling_freq} Hz")
+            if spanish:
+                print(f">>> Frecuencia de muestreo: {sampling_freq} Hz")
+            else:
+                print(f">>> Sampling frequency: {sampling_freq} Hz")
 
             # Initialize CSV file
             writer = csv.writer(csvfile)
@@ -131,12 +143,19 @@ def log_data_from_imu(
                 writer.writerow(["Waiting time", -1])
             writer.writerow(["ax", "ay", "az", "gx", "gy", "gz"])
 
-            print(f">>> Hold the IMU steady for {log_time + (t_wait if t_wait else 0)} seconds")
-            print(">>> Press any letter to start: ")
+            if spanish:
+                print(f">>> Mantenga la IMU estática por {log_time + (t_wait if t_wait else 0)} segundos")
+                print(">>> Presione cualquier letra para empezar: ")
+            else:
+                print(f">>> Hold the IMU steady for {log_time + (t_wait if t_wait else 0)} seconds")
+                print(">>> Press any letter to start: ")
             input() # Wait for user input
             ser.write(b' ') # Send any byte to start
 
-            print(">>> Data logging process has started")
+            if spanish:
+                print(">>> El proceso de recolección de datos ha comenzado")
+            else:
+                print(">>> Data logging process has started")
             # Wait for data collection to start
             while True:
                 if ser.readline().decode('utf-8').strip() == "Getting raw data...":
@@ -150,7 +169,10 @@ def log_data_from_imu(
             # Addtional calibration movements if in calibration mode
             if not log_type:
                 for move_num in range(1, n_moves + 1):
-                    print(f"\n>>> Move IMU to new position ({move_num}/{n_moves})")
+                    if spanish:
+                        print(f"\n>>> Rote la IMU a una nueva orientación ({move_num}/{n_moves})")
+                    else:
+                        print(f"\n>>> Turn IMU to new orientation ({move_num}/{n_moves})")
 
                     # Movement period
                     t_move_start = time.time()
@@ -159,13 +181,20 @@ def log_data_from_imu(
 
                     # Static period (longer for last position)
                     static_time = t_wait * 2 if move_num == n_moves else t_wait
-                    print(">>> Hold the IMU steady..")
+                    if spanish:
+                        print(">>> Mantenga la IMU estatica..")
+                    else:
+                        print(">>> Hold the IMU steady..")
                     t_static_start = time.time()
                     while time.time() - t_static_start < static_time:
                         save_line(ser, writer)
 
-            print("\n>>> Capture completed")
-            print(f"\n>>> Total corrupt data lines: {error_data}")
+            if spanish:
+                print("\n>>> Captura de datos completada")
+                print(f"\n>>> Total de líneas corrompidas: {error_data}")
+            else:
+                print("\n>>> Capture completed")
+                print(f"\n>>> Total corrupt data lines: {error_data}")
 
     except serial.SerialException as e:
         print(f"Serial communication error: {e}")

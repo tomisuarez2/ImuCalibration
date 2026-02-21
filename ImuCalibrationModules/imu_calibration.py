@@ -121,10 +121,11 @@ def auto_estimate_R_q_from_allan(
     sigma: np.ndarray, 
     fs: np.float,
     slope_tol: float=0.1, 
-    min_points: int=5,
+    min_points: int=4,
     plot: bool=False,
     u: Optional[str] = None,
     title: Optional[str] = None,
+    spanish: bool=False
 ) -> Tuple[float, float, Tuple[int, int], Tuple[int, int]]:
     """
     Automatically estimate R and q from Allan deviation curve.
@@ -151,6 +152,7 @@ def auto_estimate_R_q_from_allan(
         plot: Plot flag.
         u: Plot units.
         title: Plot title.
+        spanish: Spanish comments.
 
     Returns:
         R: Measurement noise variance [u^2].
@@ -201,7 +203,6 @@ def auto_estimate_R_q_from_allan(
         idx = range(reg_w[0], reg_w[1]+1)
         _, intercept_w, *_ = linregress(logtau[idx], logsig[idx])
         # Model: sigma = sqrt(R)/sqrt(tau) => log10(sigma) = -0.5*log10(tau) + log10(sqrt(R/fs))
-        print(intercept_w)
         sqrtR_fs = 10**intercept_w
         R = (sqrtR_fs**2) * fs
         tau_white = (tau[idx[0]], tau[idx[-1]])
@@ -221,12 +222,22 @@ def auto_estimate_R_q_from_allan(
         q, tau_rw = np.nan, None
 
     if plot:
+        if spanish:
+            plot_legend = ["Desviación de Allan de la medición del sensor","Pendiente Ruido Blanco Gaussiano","Pendiente Deriva Aleatoria del Sesgo"]
+            plot_xlabel = "Duración del intervalo [s]"
+            plot_ylabel = f"Desviación de Allan de la señal del sensor [{u}]"
+        else:   
+            plot_legend = ["Sensor measurement Allan Dev.","White-Gaussian Noise slope","Random-Walk bias slope"]
+            plot_xlabel = "Interval Length [s]"
+            plot_ylabel = f"Sensor signal Allan deviation [{u}]"
         utils.show_loglog_data(tau, np.vstack([sigma,np.sqrt(R/fs)/np.sqrt(tau),np.sqrt(q/3)*np.sqrt(tau)]).T, 
-                               legend=["Sensor measurement Allan Dev.","White-Gaussian Noise","Random-Walk bias"],
-                               xlabel="Interval Length [s]", ylabel=f"Sensor signal Allan deviation {u}",
-                               title=title)
+                               legend=plot_legend, xlabel=plot_xlabel, ylabel=plot_ylabel, title=title)
 
     return R, q, tau_white, tau_rw
+
+#==========================================================
+#-----------Functions for sensor calibration---------------
+#==========================================================
 
 def find_static_intervals_indices(
     static_labels: np.ndarray,
@@ -572,8 +583,6 @@ def calibrate_accel_from_data(
     Minf = []
     tol = 1e-2
 
-    print(">>> Accelerometer calibration in progress...")
-
     k_real = -1 # Number of optimization iterations with valid static intervals
     for k in range(2, n_iteration):
         threshold = k * zitta_init_sq
@@ -606,7 +615,6 @@ def calibrate_accel_from_data(
     params_acc = Minf[optimal_idx][1]
     static_intervals = Minf[optimal_idx][3]
 
-    print(">>> Accelerometer calibration finished")
     return params_acc, static_intervals
 
 def calibrate_gyro_from_data(
@@ -651,14 +659,10 @@ def calibrate_gyro_from_data(
         r = (2 ** n - 1) / 2 / y
         theta_init_gyro = np.array([0, 0, 0, 0, 0, 0 , 1/r, 1/r, 1/r]) # Ideal initial guess
 
-    print(">>> Gyroscope calibration in progress")
-
     # Gyroscope parameters optimization
     result = least_squares(fun=gyro_residuals, x0=theta_init_gyro,
                            args=(static_accel_data, unbiased_gyro_data, start_indices, end_indices, fs),
                            method='lm', max_nfev=2000)
-
-    print(">>> Gyroscope calibration finished")
 
     return np.hstack([result.x, bias])
 
@@ -673,6 +677,7 @@ def calibrate_imu_from_data(
     n_iteration: int=200,
     show_data_flag: bool=False,
     save_data_flag: bool=False,
+    spanish: bool=False
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
     Optimized imu calibration (accelerometer and gyroscope) using iterative threshold adjustment
@@ -690,6 +695,7 @@ def calibrate_imu_from_data(
         n_iterations: Maximum iterations
         show_data_flag: Show data, both console and plots
         save_data_flag: Save data as csv files
+        spanish: Spanish comments
 
     Returns:
         Tuple of:
@@ -706,20 +712,41 @@ def calibrate_imu_from_data(
     raw_accel_data = data[:,:3]
     raw_gyro_data = data[:,3:]
 
+    if spanish:
+        print(">>> Calibración del acelerómetro en progreso...")
+    else:
+        print(">>> Accelerometer calibration in progress...")
     # Optimized acceleromater calibration parameters
     params_acc, (starts, ends) = calibrate_accel_from_data(t_init, t_wait,
                                                            raw_accel_data, fs,
                                                            theta_init_acc, g,
                                                            n_iteration)
+    #params_acc = np.array([1.043860522409845042e-05,2.098452816658057195e-06,2.005985606930172646e-06,6.020083400010406817e-04,5.968449488725015338e-04,5.859241382355084718e-04,-7.115163422327075295e+02,3.585054836108664063e+02,1.840128451085784491e+03])
+    #starts = np.array([150,4297,4934,5585,6205,7018,7570,8297,9094,9662])
+    #ends = np.array([3613,4299,4946,5690,6368,7046,7765,8457,9158,10095])
+
+    if spanish:
+        print(">>> Calibración del acelerómetro finalizada")
+    else:
+        print(">>> Accelerometer calibration finished")
 
     # Compute calibrated static acceleration data
     static_accel_data = compute_accel_averages(starts, ends, raw_accel_data)
     calibrated_accel_avg_data = apply_accel_calibration(params_acc, static_accel_data)
 
+    if spanish:
+        print(">>> Calibración del giroscopio en progreso...")
+    else:
+        print(">>> Gyroscope calibration in progress...")
     # Optimized gyroscope calibration parameters
     params_gyro = calibrate_gyro_from_data(t_init, calibrated_accel_avg_data,
                                            raw_gyro_data, fs, starts,
                                            ends, theta_init_gyro)
+    #params_gyro = np.array([-0.00996739,0.00918384,-0.0029122,0.00723488,-0.00984196,0.00579592,0.00013737,0.00013292,0.00013394,-427.46176147,147.94793701,-80.72266388])
+    if spanish:
+        print(">>> Calibración del giroscopio finalizada")
+    else:
+        print(">>> Gyroscope calibration finished")
 
     if save_data_flag:
         np.savetxt("optmization result data/params_acc.csv", params_acc, delimiter=',')
@@ -733,23 +760,28 @@ def calibrate_imu_from_data(
         k_opt_acc = params_acc[3:6]
         b_opt_acc = params_acc[6:]
 
-        # Show acelerometer calibration results
-        print(f"Accelerometer optimized bias: {b_opt_acc}")
-        print(f"Accelerometer optimized scale factors: {k_opt_acc}")
-        print(f"Accelerometer optimized missalignments: {T_opt_acc}")
-
         # Optimization parameters
         T_opt_gyro= params_gyro[:6]
         k_opt_gyro = params_gyro[6:9]
         b_opt_gyro = params_gyro[9:]
 
-        # Show gyroscope calibration results
-        print(f"Gyroscope optimized bias: {b_opt_gyro}")
-        print(f"Gyroscope optimized scale factors: {k_opt_gyro}")
-        print(f"Gyroscope optimized missalignments: {T_opt_gyro}")
+        if spanish:
+            print(f">>> Bias sistemático del acelerómetro optimizado: {b_opt_acc}")
+            print(f">>> Factores de escala del acelerómetro optimizados: {k_opt_acc}")
+            print(f">>> Desalineamientos del acelerómetro optimizados: {T_opt_acc}")
+            print(f">>> Bias sistemático del giroscopio optimizado: {b_opt_gyro}")
+            print(f">>> Factores de escala del giroscopio optimizados: {k_opt_gyro}")
+            print(f">>> Desalineamientos del giroscopio optimizados: {T_opt_gyro}")
+        else:
+            print(f">>> Accelerometer optimized sistematic bias: {b_opt_acc}")
+            print(f">>> Accelerometer optimized scale factors: {k_opt_acc}")
+            print(f">>> Accelerometer optimized missalignments: {T_opt_acc}")
+            print(f">>> Gyroscope optimized sistematic bias: {b_opt_gyro}")
+            print(f">>> Gyroscope optimized scale factors: {k_opt_gyro}")
+            print(f">>> Gyroscope optimized missalignments: {T_opt_gyro}")
 
         # Show data plots
-        show_data(data, fs, params_acc, params_gyro, "calibration")
+        show_data(data, fs, params_acc, params_gyro, "Calibración", spanish=spanish)
 
     return params_acc, params_gyro
 
@@ -758,7 +790,8 @@ def show_data(
     fs: Union[int,float],
     params_acc: np.ndarray,
     params_gyro: np.ndarray,
-    title: str
+    title: str,
+    spanish: bool = False
 ) -> None:
     """
     Show IMU data in different plots of raw and calibrated data, applying calibration models as
@@ -772,6 +805,7 @@ def show_data(
         params_acc: Accelerometer calibration parameters (9,)
         params_gyro: Gyroscope calibration parameters (12,)
         title: Data title
+        spanish: Spanish comments
 
     Returns:
         None
@@ -789,41 +823,60 @@ def show_data(
 
     # Completed accelerometer raw data
     _, ax1 = plt.subplots(figsize=(12, 7))
-    ax1.plot(time_vector, raw_accel_data)
-    ax1.plot(time_vector, np.linalg.norm(raw_accel_data, axis=1))
+    ax1.plot(time_vector, raw_accel_data, linewidth=0.8)
+    ax1.plot(time_vector, np.linalg.norm(raw_accel_data, axis=1), linewidth=0.8)
     ax1.grid(True)
-    ax1.set_xlabel("Time [s]")
-    ax1.set_ylabel("Raw Acceleration [-]")
-    ax1.set_title("Raw Acceleration of " + title + " data")
-    ax1.legend(["ax","ay","az","|a|"])
 
     # Completed accelerometer calibrated data
     _, ax2 = plt.subplots(figsize=(12, 7))
-    ax2.plot(time_vector, cal_accel_data)
-    ax2.plot(time_vector, np.linalg.norm(cal_accel_data, axis=1))
+    ax2.plot(time_vector, cal_accel_data, linewidth=0.8)
+    ax2.plot(time_vector, np.linalg.norm(cal_accel_data, axis=1), linewidth=0.8)
     ax2.grid(True)
-    ax2.set_xlabel("Time [s]")
-    ax2.set_ylabel("Calibrated Acceleration [m/s^2]")
-    ax2.set_title("Calibrated Acceleration of " + title + " data")
-    ax2.legend(["ax","ay","az","|a|"])
 
     # Completed gyroscope raw data
     _, ax3 = plt.subplots(figsize=(12, 7))
-    ax3.plot(time_vector, raw_gyro_data)
+    ax3.plot(time_vector, raw_gyro_data, linewidth=0.8)
     ax3.grid(True)
-    ax3.set_xlabel("Time [s]")
-    ax3.set_ylabel("Raw Angular Velocity [-]")
-    ax3.set_title("Raw Angular Velocity of " + title + " data")
-    ax3.legend(["wx","wy","wz"])
 
     # Completed gyroscope calibrated data
     _, ax4 = plt.subplots(figsize=(12, 7))
-    ax4.plot(time_vector, cal_gyro_data)
+    ax4.plot(time_vector, cal_gyro_data, linewidth=0.8)
     ax4.grid(True)
-    ax4.set_xlabel("Time [s]")
-    ax4.set_ylabel("Calibrated Angular Velocity [rad/s]")
-    ax4.set_title("Calibrated Angular Velocity of " + title + " data")
-    ax4.legend(["wx","wy","wz"])
+
+    if spanish:
+        ax1.set_xlabel("Tiempo [s]")
+        ax1.set_ylabel("Medición del acelerómetro sin calibrar [-]")
+        ax1.set_title("Medición del acelerómetro sin calibrar de los datos de " + title)
+        ax1.legend(['Eje X','Eje Y','Eje Z','Magnitud'])
+        ax2.set_xlabel("Tiempo [s]")
+        ax2.set_ylabel("Medición del acelerómetro calibrada [m/s^2]")
+        ax2.set_title("Medición del acelerómetro calibrada de los datos de "+ title)
+        ax2.legend(['Eje X','Eje Y','Eje Z','Magnitud'])
+        ax3.set_xlabel("Tiempo [s]")
+        ax3.set_ylabel("Medición del giroscopio sin calibrar [-]")
+        ax3.set_title("Medición del giroscopio sin calibrar de los datos de " + title)
+        ax3.legend(['Eje X','Eje Y','Eje Z'])
+        ax4.set_xlabel("Tiempo [s]")
+        ax4.set_ylabel("Medición del giroscopio calibrada [rad/s]")
+        ax4.set_title("Medición del giroscopio calibrada de los datos de " + title)
+        ax4.legend(['Eje X','Eje Y','Eje Z'])
+    else:
+        ax1.set_xlabel("Time [s]")
+        ax1.set_ylabel("Raw Accelerometer Measurement [-]")
+        ax1.set_title("Raw Accelerometer Measurement of " + title + " data")
+        ax1.legend(['X axis','Y axis','Z axis','Magnitude'])
+        ax2.set_xlabel("Time [s]")
+        ax2.set_ylabel("Calibrated Accelerometer Measurement [m/s^2]")
+        ax2.set_title("Calibrated Accelerometer Measurement of " + title + " data")
+        ax2.legend(['X axis','Y axis','Z axis','Magnitude'])
+        ax3.set_xlabel("Time [s]")
+        ax3.set_ylabel("Raw Gyroscope Measurement [-]")
+        ax3.set_title("Raw Gyroscope Measurement of " + title + " data")
+        ax3.legend(['X axis','Y axis','Z axis'])
+        ax4.set_xlabel("Time [s]")
+        ax4.set_ylabel("Calibrated Gyroscope Measurement [rad/s]")
+        ax4.set_title("Calibrated Gyroscope Measurement of " + title + " data")
+        ax4.legend(['X axis','Y axis','Z axis'])
 
     plt.show()
 
