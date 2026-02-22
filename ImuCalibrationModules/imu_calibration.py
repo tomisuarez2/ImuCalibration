@@ -119,7 +119,7 @@ def compute_allan_variance(
 def auto_estimate_R_q_from_allan(
     tau: np.ndarray, 
     sigma: np.ndarray, 
-    fs: np.float,
+    fs: float,
     slope_tol: float=0.1, 
     min_points: int=4,
     plot: bool=False,

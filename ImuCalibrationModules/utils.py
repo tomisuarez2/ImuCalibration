@@ -15,7 +15,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.spatial.transform import Rotation
 
-plt.style.use("seaborn-whitegrid")
+plt.style.use('seaborn-v0_8-whitegrid')
 plt.rcParams['font.family'] = 'Times New Roman'
 
 def log_data_from_imu(
