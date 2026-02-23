@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from ImuCalibrationModules import imu_calibration as imu
-from ImuCalibrationModules.utils import extract_imu_data
+from ImuCalibrationModules.utils import extract_imu_data, show_time_data
 
 plt.style.use('seaborn-v0_8-whitegrid')
 plt.rcParams['font.family'] = 'Times New Roman'
@@ -21,6 +21,9 @@ save = True
 
 # Gravity's acceleration
 g = 9.80665
+
+# Manufacturer scale factor
+scale_factor = g/16384
 
 # Read data
 file_name = "calibration data/example_data_calibration.csv"
@@ -38,8 +41,10 @@ if spanish:
 else:
     print(">>> Accelerometer calibration in progress...")
 
-theta_opt_acc, (starts, ends) = imu.calibrate_accel_from_data(t_init, t_wait,
-                                                              raw_accel_data, sampling_freq)
+theta_opt_acc, (starts, ends) = imu.calibrate_accel_from_data(t_init, t_wait, raw_accel_data, sampling_freq)
+#theta_opt_acc = np.array([1.043860522409845042e-05,2.098452816658057195e-06,2.005985606930172646e-06,6.020083400010406817e-04,5.968449488725015338e-04,5.859241382355084718e-04,-7.115163422327075295e+02,3.585054836108664063e+02,1.840128451085784491e+03])
+#starts = np.array([150,4297,4934,5585,6205,7018,7570,8297,9094,9662])
+#ends = np.array([3613,4299,4946,5690,6368,7046,7765,8457,9158,10095])
 
 if spanish:
     print(">>> Calibración del acelerómetro finalizada")
@@ -68,61 +73,42 @@ if save:
     np.savetxt("optmization result data/calibrated_accel_avg_data.csv", calibrated_accel_avg_data, delimiter=',')
     np.savetxt("optmization result data/static_intervals.csv", (starts, ends), delimiter=',')
 
-# Plots
-fig, ax1 = plt.subplots(figsize=(12, 7))
-#ax2 = ax1.twinx()
-
 if spanish:
     print(f">>> Número de muestras en el archivo de mediciones para calibración: {n_samples}")
     print(f">>> Bias sistemático del acelerómetro optimizado: {b_opt_acc}")
     print(f">>> Factores de escala del acelerómetro optimizados: {k_opt_acc}")
     print(f">>> Desalineamientos del acelerómetro optimizados: {T_opt_acc}")
-    ax1.set_xlabel("Número de medición estática", fontsize=14)
-    ax1.set_ylabel("Aceleración medida [m/s^2]", fontsize=14)
-    ax1.set_title("Magnitud de las mediciones estáticas del acelerómetro", fontsize=18, fontweight='bold', pad=15)
-    ax1.tick_params(axis='both', labelsize=14)
-    # ax2.set_ylabel("Magitud de la medición del acelerómetro calibrada [m/s^2]", fontsize=14)
-    labels_plot_1 = ["Sensor sin calibrar","Sensor calibrado","Referencia (g = 9.80665 m/s²)"] 
+    xlabel_plot_1 = "M Muestras promediadas"
+    ylabel_plot_1 = "Magnitud [m/s^2]"
+    title_plot_1 = "Magnitud de la medición del acelerómetro estática a lo largo del tiempo"
+    labels_plot_1 = ["Sensor sin calibrar","Sensor calibrado","Referencia (g = 9.81 m/s²)"] 
     
 else:
     print(f">>> Number of samples in the calibration data file: {n_samples}")
     print(f">>> Accelerometer optimized sistematic bias: {b_opt_acc}")
     print(f">>> Accelerometer optimized scale factors: {k_opt_acc}")
     print(f">>> Accelerometer optimized missalignments: {T_opt_acc}")
-    ax1.set_xlabel("Averaged samples", fontsize=14)
-    ax1.set_ylabel("Raw acceletometer measurement magnitude [-]", fontsize=14)
-    ax1.set_title("Static accelerometer measurement magnitude over time", fontsize=18, fontweight='bold', pad=15)
-    ax1.set_ylabel("Calibrated accelerometer measurement magnitude [m/s^2]", fontsize=14)
-    labels_plot_1 = ["Uncalibrated sensor","Calibrated sensor","Reference (g = 9.80665 m/s²)"] 
+    xlabel_plot_1 = "M Averaged samples"
+    ylabel_plot_1 = "Magnitude [m/s^2]"
+    title_plot_1 = "Static accelerometer measurement magnitude over time"
+    labels_plot_1 = ["Uncalibrated sensor","Calibrated sensor","Reference (g = 9.81 m/s²)"] 
 
-ax1.plot(raw_accel_magnitudes, color="green", linewidth=1.8, label=labels_plot_1[0])
-ax1.plot(cal_accel_magnitudes, color="red", linewidth=1.8, label=labels_plot_1[1])
-ax1.axhline(g, color='k', linestyle='--', alpha=1, linewidth=1.5, label=labels_plot_1[2])
-ax1.set_xlim(0, len(cal_accel_magnitudes)-1)
-ax1.legend(fontsize=14, loc="best")
-
-# Time vector
-time_vector = np.arange(0, n_samples, 1) / sampling_freq
-
-# Calcular módulo
-acc__cal_magnitude = np.linalg.norm(calibrated_accel_data, axis=1)
-acc__raw_magnitude = np.linalg.norm(raw_accel_data, axis=1)
-# Plot
-fig2, ax3 = plt.subplots(figsize=(12, 7))
-ax3.plot(time_vector, acc__raw_magnitude, color="green", linewidth=1.8)
-ax3.plot(time_vector, acc__cal_magnitude, color="red", linewidth=1.8)
-ax3.axhline(g, color='k', linestyle='--', alpha=1, linewidth=1.5)
+show_time_data(np.hstack([scale_factor*raw_accel_magnitudes.reshape(-1,1), cal_accel_magnitudes.reshape(-1,1), g*np.ones_like(cal_accel_magnitudes).reshape(-1,1)]), 
+               1, legend=labels_plot_1, xlabel=xlabel_plot_1, ylabel=ylabel_plot_1, title=title_plot_1)
 
 if spanish:
-    ax3.set_title("Evolución del módulo de la aceleración a lo largo del tiempo",  fontsize=18, fontweight='bold', pad=15)
-    ax3.set_xlabel("Tiempo [s]", fontsize=14)
-    ax3.set_ylabel("Módulo de la aceleración [m/s^2]", fontsize=14)
-    ax3.legend(['Sensor sin calibrar', 'Sensor calibrado', "Referencia (g = 9.80665 m/s²)"], fontsize=14, loc="best")
+    title_plot_2 = "Evolución de la medición calibrada del acelerómetro lo largo del tiempo"
+    xlabel_plot_2 = "Tiempo [s]"
+    ylabel_plot_2 = "[m/s^2]"
+    labels_plot_2 = ['Eje X','Eje Y','Eje Z']
 else:
-    ax3.set_title("Calibrated acceleration magnitude over time",  fontsize=18, fontweight='bold', pad=15)
-    ax3.set_xlabel("Time [s]", fontsize=14)
-    ax3.set_ylabel("Acceleration magnitude [m/s^2]", fontsize=14)
-    ax3.legend(["Uncalibrated sensor","Calibrated sensor","Reference (g = 9.80665 m/s²)"],  fontsize=14, loc="best")
-ax3.tick_params(axis='both', labelsize=14)
-ax3.set_xlim(time_vector[0], time_vector[-1])
+    title_plot_2 = "Calibrated accelerometer measurements evolution over time"
+    xlabel_plot_2 = "Time [s]"
+    ylabel_plot_2 = "[m/s^2]"
+    labels_plot_2 = ['X axis','Y axis','Z axis']
+
+# Completed accelerometer calibrated data
+show_time_data(calibrated_accel_data, sampling_freq, 
+               legend=labels_plot_2, xlabel=xlabel_plot_2, ylabel=ylabel_plot_2, title=title_plot_2)
+
 plt.show()

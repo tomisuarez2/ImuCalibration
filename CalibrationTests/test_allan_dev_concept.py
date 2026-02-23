@@ -8,7 +8,7 @@ import numpy as np
 from ImuCalibrationModules import imu_calibration as imu
 from ImuCalibrationModules.utils import extract_imu_data, show_time_data
 
-spanish = True
+spanish = False
 
 # Number of samples
 n_samples = 5000000
@@ -33,7 +33,7 @@ syn_tau = syn_tau.reshape(-1)
 if spanish:
     show_time_data(syn_data, sampling_freq, legend=["Datos"], xlabel="Tiempo [s]", ylabel="[u]", title="Datos sintéticos")
 else:   
-    show_time_data(syn_data, sampling_freq, legend=["Data"], ylabel="[u]", title="Synthetic data")
+    show_time_data(syn_data, sampling_freq, legend=["Data"], xlabel="Time [s]", ylabel="[u]", title="Synthetic data")
 
 if spanish:
     plot_titles = 'Desviación de Allan'
@@ -41,7 +41,7 @@ else:
     plot_titles = 'Allan deviation'  
 
 # Estimate R and q values
-R_est, q_est, tauwn_syn, taurw_syn = imu.auto_estimate_R_q_from_allan(syn_tau, syn_a_dev, sampling_freq, plot=True, title=plot_titles, spanish=spanish)
+R_est, q_est, tauwn_syn, taurw_syn = imu.auto_estimate_R_q_from_allan(syn_tau, syn_a_dev, sampling_freq, plot=True, u="u", title=plot_titles, spanish=spanish)
 
 # Show results
 if spanish:

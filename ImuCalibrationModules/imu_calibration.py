@@ -782,13 +782,15 @@ def calibrate_imu_from_data(
             print(f">>> Gyroscope optimized missalignments: {T_opt_gyro}")
 
         # Show data plots
-        show_data(data, fs, params_acc, params_gyro, "Calibración", spanish=spanish)
+        show_data(data, fs, g/16384, 0.01745/131, params_acc, params_gyro, "Calibration", spanish=spanish)
 
     return params_acc, params_gyro
 
 def show_data(
     data: np.ndarray,
     fs: Union[int,float],
+    acc_scale: float, 
+    gyro_scale: float,
     params_acc: np.ndarray,
     params_gyro: np.ndarray,
     title: str,
@@ -803,6 +805,8 @@ def show_data(
             - data[:,:3]: acceleration data
             - data[:,3:]: angular velocity data
         fs: Sampling rate in Hz.
+        acc_scale: Manufacturer accelerometer scale.
+        gyro_scale: Manufacturer gyroscope scale.
         params_acc: Accelerometer calibration parameters (9,)
         params_gyro: Gyroscope calibration parameters (12,)
         title: Data title
@@ -811,73 +815,49 @@ def show_data(
     Returns:
         None
     """
-    n_samples = data.shape[0]
-
-    # Time vector
-    time_vector = np.arange(0, n_samples, 1) / fs
-
     raw_accel_data = data[:,:3]
     raw_gyro_data = data[:,3:]
 
     cal_accel_data = apply_accel_calibration(params_acc, raw_accel_data)
     cal_gyro_data = apply_gyro_calibration(params_gyro[:9], raw_gyro_data - params_gyro[9:])
 
-    # Completed accelerometer raw data
-    _, ax1 = plt.subplots(figsize=(12, 7))
-    ax1.plot(time_vector, raw_accel_data, linewidth=0.8)
-    ax1.plot(time_vector, np.linalg.norm(raw_accel_data, axis=1), linewidth=0.8)
-    ax1.grid(True)
+    if spanish:
+        xlabel_plot = "Tiempo [s]"
+        legend_plot_1 = ['Eje X','Eje Y','Eje Z','Magnitud']
+        legend_plot_2 = ['Eje X','Eje Y','Eje Z']
+        ylabel_plot_1 = "[m/s^2]"
+        ylabel_plot_2 = "[rad/s]"
+        title_plot_1 = "Medición del acelerómetro sin calibrar de los datos de " + title
+        title_plot_2 = "Medición del acelerómetro calibrada de los datos de "+ title
+        title_plot_3 = "Medición del giroscopio sin calibrar de los datos de " + title
+        title_plot_4 = "Medición del giroscopio calibrada de los datos de " + title
+    else:
+        xlabel_plot = "Time [s]"
+        legend_plot_1 = ['X axis','Y axis','Z axis','Magnitude']
+        legend_plot_2 = ['X axis','Y axis','Z axis']
+        ylabel_plot_1 = "[m/s^2]"
+        ylabel_plot_2 = "[rad/s]"
+        title_plot_1 = "Uncalibrated Accelerometer Measurement of " + title + " data"
+        title_plot_2 = "Calibrated Accelerometer Measurement of " + title + " data"
+        title_plot_3 = "Uncalibrated Gyroscope Measurement of " + title + " data"
+        title_plot_4 = "Calibrated Gyroscope Measurement of " + title + " data"
+
+    # Completed accelerometer uncalibrated data
+    utils.show_time_data(np.hstack([acc_scale*raw_accel_data.reshape(-1,3),np.linalg.norm(acc_scale*raw_accel_data, axis=1).reshape(-1,1)]), 
+                         fs, legend=legend_plot_1, xlabel=xlabel_plot, ylabel=ylabel_plot_1, title=title_plot_1)
+    
 
     # Completed accelerometer calibrated data
-    _, ax2 = plt.subplots(figsize=(12, 7))
-    ax2.plot(time_vector, cal_accel_data, linewidth=0.8)
-    ax2.plot(time_vector, np.linalg.norm(cal_accel_data, axis=1), linewidth=0.8)
-    ax2.grid(True)
+    utils.show_time_data(np.hstack([cal_accel_data.reshape(-1,3),np.linalg.norm(cal_accel_data, axis=1).reshape(-1,1)]), 
+                         fs, legend=legend_plot_1, xlabel=xlabel_plot, ylabel=ylabel_plot_1, title=title_plot_2)
 
-    # Completed gyroscope raw data
-    _, ax3 = plt.subplots(figsize=(12, 7))
-    ax3.plot(time_vector, raw_gyro_data, linewidth=0.8)
-    ax3.grid(True)
+    # Completed gyroscope uncalibrated data
+    utils.show_time_data(gyro_scale*raw_gyro_data.reshape(-1,3), 
+                         fs, legend=legend_plot_2, xlabel=xlabel_plot, ylabel=ylabel_plot_2, title=title_plot_3)
 
     # Completed gyroscope calibrated data
-    _, ax4 = plt.subplots(figsize=(12, 7))
-    ax4.plot(time_vector, cal_gyro_data, linewidth=0.8)
-    ax4.grid(True)
+    utils.show_time_data(cal_gyro_data.reshape(-1,3), 
+                         fs, legend=legend_plot_2, xlabel=xlabel_plot, ylabel=ylabel_plot_2, title=title_plot_4)
 
-    if spanish:
-        ax1.set_xlabel("Tiempo [s]")
-        ax1.set_ylabel("Medición del acelerómetro sin calibrar [-]")
-        ax1.set_title("Medición del acelerómetro sin calibrar de los datos de " + title)
-        ax1.legend(['Eje X','Eje Y','Eje Z','Magnitud'])
-        ax2.set_xlabel("Tiempo [s]")
-        ax2.set_ylabel("Medición del acelerómetro calibrada [m/s^2]")
-        ax2.set_title("Medición del acelerómetro calibrada de los datos de "+ title)
-        ax2.legend(['Eje X','Eje Y','Eje Z','Magnitud'])
-        ax3.set_xlabel("Tiempo [s]")
-        ax3.set_ylabel("Medición del giroscopio sin calibrar [-]")
-        ax3.set_title("Medición del giroscopio sin calibrar de los datos de " + title)
-        ax3.legend(['Eje X','Eje Y','Eje Z'])
-        ax4.set_xlabel("Tiempo [s]")
-        ax4.set_ylabel("Medición del giroscopio calibrada [rad/s]")
-        ax4.set_title("Medición del giroscopio calibrada de los datos de " + title)
-        ax4.legend(['Eje X','Eje Y','Eje Z'])
-    else:
-        ax1.set_xlabel("Time [s]")
-        ax1.set_ylabel("Raw Accelerometer Measurement [-]")
-        ax1.set_title("Raw Accelerometer Measurement of " + title + " data")
-        ax1.legend(['X axis','Y axis','Z axis','Magnitude'])
-        ax2.set_xlabel("Time [s]")
-        ax2.set_ylabel("Calibrated Accelerometer Measurement [m/s^2]")
-        ax2.set_title("Calibrated Accelerometer Measurement of " + title + " data")
-        ax2.legend(['X axis','Y axis','Z axis','Magnitude'])
-        ax3.set_xlabel("Time [s]")
-        ax3.set_ylabel("Raw Gyroscope Measurement [-]")
-        ax3.set_title("Raw Gyroscope Measurement of " + title + " data")
-        ax3.legend(['X axis','Y axis','Z axis'])
-        ax4.set_xlabel("Time [s]")
-        ax4.set_ylabel("Calibrated Gyroscope Measurement [rad/s]")
-        ax4.set_title("Calibrated Gyroscope Measurement of " + title + " data")
-        ax4.legend(['X axis','Y axis','Z axis'])
-
-    plt.show()
+    
 
