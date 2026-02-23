@@ -15,7 +15,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.spatial.transform import Rotation
 
-plt.style.use('seaborn-v0_8-whitegrid')
+plt.style.use('seaborn-whitegrid')
 plt.rcParams['font.family'] = 'Times New Roman'
 
 def log_data_from_imu(
@@ -357,12 +357,26 @@ def show_loglog_data(
     """
 
     # Visualization
-    plt.loglog(x_data, y_data)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
-    plt.legend(legend)
-    plt.title(title)
-    plt.grid(True, which="both")
+    _, ax1 = plt.subplots(figsize=(12, 7))
+    lines = ax1.loglog(x_data, y_data, linewidth=0.8)
+    for line, label in zip(lines, legend):
+        line.set_label(label)
+    ax1.grid(True)
+    ax1.set_xlabel(xlabel, fontsize=14)
+    ax1.set_ylabel(ylabel, fontsize=14)
+    ax1.set_title(title, fontsize=18, fontweight='bold', pad=15)
+    handles, _ = ax1.get_legend_handles_labels()
+    ax1.legend(
+        handles=handles,
+        fontsize=12,
+        loc="best",
+        frameon=True,        
+        fancybox=False,     
+        framealpha=1.0,      
+        edgecolor='black',  
+        facecolor='white'   
+    )
+
     plt.show()
 
 def show_time_data(
@@ -392,14 +406,26 @@ def show_time_data(
     # Time vector
     time_vector = np.arange(0, n_samples, 1) / fs
 
-    # Completed barometer data over time
     _, ax1 = plt.subplots(figsize=(12, 7))
-    ax1.plot(time_vector, data)
+    lines = ax1.plot(time_vector, data, linewidth=0.8)
+    for line, label in zip(lines, legend):
+        line.set_label(label)
     ax1.grid(True)
-    ax1.set_xlabel(xlabel)
-    ax1.set_ylabel(ylabel)
-    ax1.set_title(title)
-    ax1.legend(legend)
+    ax1.set_xlabel(xlabel, fontsize=14)
+    ax1.set_xlim(time_vector[0], time_vector[-1])
+    ax1.set_ylabel(ylabel, fontsize=14)
+    ax1.set_title(title, fontsize=18, fontweight='bold', pad=15)
+    handles, _ = ax1.get_legend_handles_labels()
+    ax1.legend(
+        handles=handles,
+        fontsize=12,
+        loc="best",
+        frameon=True,        
+        fancybox=False,     
+        framealpha=1.0,      
+        edgecolor='black',  
+        facecolor='white'   
+    )
 
     plt.show()
     

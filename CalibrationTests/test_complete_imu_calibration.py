@@ -9,7 +9,7 @@ import numpy as np
 from ImuCalibrationModules import imu_calibration as imu
 from ImuCalibrationModules.utils import extract_imu_data
 
-spanish = True
+spanish = False
 
 # Gravity's acceleration
 gravity = 9.80665
@@ -32,7 +32,7 @@ params_acc, params_gyro = imu.calibrate_imu_from_data(t_init, t_wait, data,
                                                       samp_freq, g=gravity,
                                                       show_data_flag=True, 
                                                       save_data_flag=False, 
-                                                      spanish=True)
+                                                      spanish=spanish)
 
 
 
