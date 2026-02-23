@@ -11,10 +11,10 @@ import numpy as np
 from ImuCalibrationModules import imu_calibration as imu
 from ImuCalibrationModules.utils import extract_imu_data
 
-plt.style.use("seaborn-whitegrid")
+plt.style.use('seaborn-v0_8-whitegrid')
 plt.rcParams['font.family'] = 'Times New Roman'
 
-spanish = False
+spanish = True
 
 # Save data flag
 save = False
@@ -35,7 +35,8 @@ calibrated_accel_avg_data = np.loadtxt("optmization result data/calibrated_accel
 starts, ends = np.loadtxt("optmization result data/static_intervals.csv", delimiter=',').astype(int)
 
 # Raw gyroscope data
-raw_gyro_data = data[:,3:]
+scale = 1.0 / 131.0                                # for ±250 °/s sensor
+raw_gyro_data = data[:,3:] * scale * np.pi / 180.0 # in rad/s
 
 # Calibrate gyroscope
 if spanish:

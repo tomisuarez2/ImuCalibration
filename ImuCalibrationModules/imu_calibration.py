@@ -588,6 +588,7 @@ def calibrate_accel_from_data(
         threshold = k * zitta_init_sq
         starts, ends = find_static_imu_intervals(raw_accel_data, fs, t_wait, threshold)
         avg_accel = compute_accel_averages(starts, ends, raw_accel_data)
+        #print("Cantidad de orientaciones detectadas:", avg_accel.shape[0])
         n_static_samples = avg_accel.shape[0]
 
         # Check for sufficient unique orientations
@@ -655,7 +656,7 @@ def calibrate_gyro_from_data(
     # Initialize parameters if not provided
     if theta_init_gyro is None:
         n = 16 # Your IMU A/D converter bits
-        y = 250.0 * np.pi / 180.0 # Your IMU gyroscope scale in rad/s
+        y = 250.0
         r = (2 ** n - 1) / 2 / y
         theta_init_gyro = np.array([0, 0, 0, 0, 0, 0 , 1/r, 1/r, 1/r]) # Ideal initial guess
 
