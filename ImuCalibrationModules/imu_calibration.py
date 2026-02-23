@@ -858,5 +858,5 @@ def show_data(
     utils.show_time_data(cal_gyro_data.reshape(-1,3), 
                          fs, legend=legend_plot_2, xlabel=xlabel_plot, ylabel=ylabel_plot_2, title=title_plot_4)
 
-    plt.show()
+    
 

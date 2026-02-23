@@ -407,7 +407,7 @@ def show_time_data(
     time_vector = np.arange(0, n_samples, 1) / fs
 
     _, ax1 = plt.subplots(figsize=(12, 7))
-    lines = ax1.plot(time_vector, data, linewidth=0.8)
+    lines = ax1.plot(time_vector, data, linewidth=1)
     for line, label in zip(lines, legend):
         line.set_label(label)
     ax1.grid(True)
@@ -428,6 +428,24 @@ def show_time_data(
     )
 
     plt.show()
+
+def compute_pitch_yaw_from_acc(
+    norm_static_acc: np.ndarray,
+) -> np.ndarray:
+    """
+    Compute pitch angle and roll angle from normalized static accelerometer measurement.
+
+    Args:
+        norm_static_acc: Normalized static accelerometer measurement array of shape (N,3) where N is number of samples.
+
+    Returns:
+        Numpy array containing [pitch_angles[rad],roll_angles[rad]]
+    """
+    pitch = np.arcsin(norm_static_acc[:,0])
+    roll = -np.arcsin(norm_static_acc[:,1]/np.cos(pitch))
+
+    return np.hstack([pitch.reshape(-1,1), roll.reshape(-1,1)])
+
     
 
     
