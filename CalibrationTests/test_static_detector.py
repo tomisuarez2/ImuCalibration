@@ -16,7 +16,7 @@ from ImuCalibrationModules.utils import extract_imu_data
 plt.style.use('seaborn-v0_8-whitegrid')
 plt.rcParams['font.family'] = 'Times New Roman'
 
-spanish = True
+spanish = False
 
 # Read data
 file_name = "calibration data/example_data_calibration.csv"
@@ -37,7 +37,7 @@ threshold = 35 * zitta_init_squared # As we change the integer multiple we chang
 time_vector = np.arange(0, n_samples, 1) / sampling_freq
 
 # Plots
-fig, ax1 = plt.subplots(figsize=(12, 6))
+fig, ax1 = plt.subplots()
 lines = ax1.plot(time_vector, accel_data)
 
 
@@ -93,7 +93,6 @@ if spanish:
         facecolor='white'    # fondo blanco
     )
     ax1.set_xlim(time_vector[0], time_vector[-1])
-    plt.tight_layout()
     # ax2.set_ylabel("Detector de estaticidad")
 else:
     print(f">>> Number of samples in the calibration data file: {n_samples}")
