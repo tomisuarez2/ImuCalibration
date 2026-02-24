@@ -13,7 +13,7 @@ import numpy as np
 from ImuCalibrationModules import imu_calibration as imu
 from ImuCalibrationModules.utils import extract_imu_data
 
-plt.style.use('seaborn-whitegrid')
+plt.style.use('seaborn-v0_8-whitegrid')
 plt.rcParams['font.family'] = 'Times New Roman'
 
 spanish = True
@@ -50,19 +50,23 @@ if spanish:
     for line, label in zip(lines, labels_axes):
         line.set_label(label)
 
-    # Detect static changes
-    changes = np.diff(statics.astype(int))
-    start_indices = np.where(changes == 1)[0] + 1  
-    end_indices   = np.where(changes == -1)[0] + 1 
+    # ax2 = ax1.twinx()
+    # ax2.plot(time_vector, statics, color='black')
+    #fig.tight_layout()
 
-    # Border cases
+    # Detectar cambios en statics
+    changes = np.diff(statics.astype(int))
+    start_indices = np.where(changes == 1)[0] + 1   # pasa de 0 → 1
+    end_indices   = np.where(changes == -1)[0] + 1  # pasa de 1 → 0
+
+    # Casos borde
     if statics[0] == 1:
         start_indices = np.insert(start_indices, 0, 0)
 
     if statics[-1] == 1:
         end_indices = np.append(end_indices, len(statics)-1)
 
-    # Paint static intervals
+    # Pintar intervalos estáticos
     for start, end in zip(start_indices, end_indices):
         ax1.axvspan(time_vector[start],
                     time_vector[end],
@@ -82,35 +86,36 @@ if spanish:
         handles=handles,
         fontsize=12,
         loc="best",
-        frameon=True,
-        fancybox=False,
-        framealpha=1.0,
-        edgecolor='black',
-        facecolor='white'
+        frameon=True,        # activa el recuadro
+        fancybox=False,      # caja rectangular (no redondeada)
+        framealpha=1.0,      # opacidad completa
+        edgecolor='black',   # color del borde
+        facecolor='white'    # fondo blanco
     )
     ax1.set_xlim(time_vector[0], time_vector[-1])
+    plt.tight_layout()
+    # ax2.set_ylabel("Detector de estaticidad")
 else:
     print(f">>> Number of samples in the calibration data file: {n_samples}")
-    print(f">>> {len(starts)} static intervals have been detected.")
+    print(f">>> {len(starts)} static intervals have detected.")
 
     labels_axes = ['X axis','Y axis','Z axis']
 
     for line, label in zip(lines, labels_axes):
         line.set_label(label)
 
-    # Detect static changes
     changes = np.diff(statics.astype(int))
-    start_indices = np.where(changes == 1)[0] + 1  
-    end_indices   = np.where(changes == -1)[0] + 1 
+    start_indices = np.where(changes == 1)[0] + 1   # pasa de 0 → 1
+    end_indices   = np.where(changes == -1)[0] + 1  # pasa de 1 → 0
 
-    # Border cases
+    # Casos borde
     if statics[0] == 1:
         start_indices = np.insert(start_indices, 0, 0)
 
     if statics[-1] == 1:
         end_indices = np.append(end_indices, len(statics)-1)
 
-    # Paint static intervals
+    # Pintar intervalos estáticos
     for start, end in zip(start_indices, end_indices):
         ax1.axvspan(time_vector[start],
                     time_vector[end],
@@ -130,13 +135,15 @@ else:
         handles=handles,
         fontsize=12,
         loc="best",
-        frameon=True,   
-        fancybox=False,  
-        framealpha=1.0,      
-        edgecolor='black',  
-        facecolor='white'    
+        frameon=True,        # activa el recuadro
+        fancybox=False,      # caja rectangular (no redondeada)
+        framealpha=1.0,      # opacidad completa
+        edgecolor='black',   # color del borde
+        facecolor='white'    # fondo blanco
     )
     ax1.set_xlim(time_vector[0], time_vector[-1])
+
+    # ax2.set_ylabel("Static detector")
 
 plt.show()
 

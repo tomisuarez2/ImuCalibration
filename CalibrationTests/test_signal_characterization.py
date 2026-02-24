@@ -8,7 +8,7 @@ import numpy as np
 from ImuCalibrationModules import imu_calibration as imu
 from ImuCalibrationModules.utils import extract_imu_data, show_time_data
 
-spanish = False
+spanish = True
 
 # Save data flag
 save = False
@@ -120,9 +120,9 @@ else:
     show_time_data(np.vstack([cal_accel_data[:,0], sim_data_ax]).T, sampling_freq, ["Logged X axis Signal", "Simulated X axis Signal"], ylabel="Accelerometer data [m/s^2]")
     show_time_data(np.vstack([cal_accel_data[:,1], sim_data_ay]).T, sampling_freq, ["Logged Y axis Signal", "Simulated Y axis Signal"], ylabel="Accelerometer data [m/s^2]")
     show_time_data(np.vstack([cal_accel_data[:,2], sim_data_az]).T, sampling_freq, ["Logged Z axis Signal", "Simulated Z axis Signal"], ylabel="Accelerometer data [m/s^2]")
-    show_time_data(np.vstack([cal_gyro_data[:,0], sim_data_gx]).T, sampling_freq, ["Logged X axis Signal", "Simulated X axis Signal"], ylabel="Gyroscope data [rad/s]")
-    show_time_data(np.vstack([cal_gyro_data[:,1], sim_data_gy]).T, sampling_freq, ["Logged Y axis Signal", "Simulated Y axis Signal"], ylabel="Gyroscope data [rad/s]")
-    show_time_data(np.vstack([cal_gyro_data[:,2], sim_data_gz]).T, sampling_freq, ["Logged Z axis Signal", "Simulated Z axis Signal"], ylabel="Gyroscope data [rad/s]")
+    show_time_data(np.vstack([cal_gyro_data[:,0], sim_data_gx]).T, sampling_freq, ["Logged X axis Signal", "Simulated X axis Signal"], ylabel="Giroscope data [rad/s]")
+    show_time_data(np.vstack([cal_gyro_data[:,1], sim_data_gy]).T, sampling_freq, ["Logged Y axis Signal", "Simulated Y axis Signal"], ylabel="Giroscope data [rad/s]")
+    show_time_data(np.vstack([cal_gyro_data[:,2], sim_data_gz]).T, sampling_freq, ["Logged Z axis Signal", "Simulated Z axis Signal"], ylabel="Giroscope data [rad/s]")
 
 
 
