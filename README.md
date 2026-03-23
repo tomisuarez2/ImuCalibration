@@ -39,54 +39,36 @@ Universidad Nacional de Cuyo
 
 ```text
 ImuCalibration/
-├── __init__.py
 ├── arduino code/
-│ ├── connection.jpeg # Connection diagram between Arduino UNO and MPU6050
-│ ├── MPU-6000-Register.pdf # MPU6050 registers file
-│ ├── MPU-6000.pdf # MPU6050 datasheet
-│ ├── MPU6050_raw.ino # Arduino UNO code for MPU6050 raw values UART communication based on the specified connection
+│   ├── connection.jpeg          # Wiring diagram
+│   ├── MPU6050_raw.ino          # Arduino firmware for raw data collection
+│   ├── MPU6050.pdf              # Datasheet
+│   └── MPU-6000-Register.pdf    # Register map
 ├── ImuCalibrationModules/
-│ ├── __init__.py
-│ ├── imu_calibration.py # Main calibration logic
-│ └── utils.py # Helpers and data loaders
-├── calibration data/
-│ └── example_data_calibration.csv # Example raw IMU data
-│ └── example_data_tinit_calc.csv # Example static IMU raw data for initial static time calculation
-├── characterization data/ # Data for signal characterization
-│ └── imu_static_data_6h.csv # 6h hour static data recording
-├── characterization result data/ # Imu sensors noise variances 
-├── characterization result images/ # Imu sensors noise characterization images, includes simulated data
-├── optimization result images/
-│ └── cal_accel.png # Calibrated acceleration data
-│ └── cal_ang_vel.png # Calibrated angular velocity data
-│ └── non_cal_accel.png # Non calibrated acceleration data
-│ └── non_cal_ang_vel.png # Non alibrated angular velocity data
-│ └── static_detector_test.png # Static interval detector test
-├── optimization result data/
-│ └── calibrated_accel_avg_data.csv # Example calibrated static acceleration data for gyroscope calibration
-│ └── params_acc.csv # Optimization result parameters for accelerometer calibration
-│ └── params_gyro.csv # Optimization result parameters for gyroscope calibration
-│ └── static_intervals.csv # Static intervals start and end indices for gyroscope calibration
-├── results test data/
-├── optimization result data/
-│ └── imu_90_x_rot.csv # Raw imu data from +90 degrees X rotation for optmization result validation
-│ └── imu_static_test.csv # Raw imu data from static test for optimization result validation
-├── theory/
-│ └── Allan_Deviation_Theory___ENG.pdf # Allan Deviation Theory for sensor characterization [ENG]
-│ └── Allan_Deviation_Theory___ESP.pdf # Allan Deviation Theory for sensor characterization [ESP]
+│   ├── imu_calibration.py       # Main calibration logic
+│   └── utils.py                 # Helper functions and data loaders
 ├── CalibrationTests/
-│ └── __init__.py
-│ └── test_data_logging.py # Imu raw accelerometer and gyroscope data logging in a csv file
-│ └── test_tinit_calculation.py # Initial static time calculation test example
-│ └── test_static_detector.py # Static intervals detector test example
-│ └── test_accel_calibration.py # Accelerometer calibration test example
-│ └── test_gyro_calibration.py # Gyroscope calibration test example
-│ └── test_signal_characterization # Imu signal noise characterization test
-│ └── test_calibration_result.py # Imu optimization results example test
-│ └── test_complete_imu_calibration.py # Complete imu (accelerometer and gyroscope) calibration test example
-├── README.md # This file
-├── LICENSE # MIT License
-└── requirements.txt # Python dependencies
+│   ├── test_accel_calibration.py
+│   ├── test_gyro_calibration.py
+│   ├── test_complete_imu_calibration.py
+│   └── ...                      # Additional test scripts
+├── calibration data/
+│   ├── example_data_calibration.csv      # Raw IMU data for calibration
+│   └── example_data_tinit_calc.csv       # Static data for initial time calculation
+├── optimization result data/
+│   ├── params_acc.csv           # Accelerometer calibration parameters
+│   ├── params_gyro.csv          # Gyroscope calibration parameters
+│   └── static_intervals.csv     # Detected static intervals
+├── optimization result images/
+│   ├── cal_accel.png            # Calibrated acceleration data
+│   ├── cal_ang_vel.png          # Calibrated angular velocity
+│   ├── non_cal_accel.png        # Raw acceleration data
+│   └── non_cal_ang_vel.png      # Raw angular velocity data
+├── characterization data/        # Static data for noise analysis
+├── theory/                       # Reference materials
+├── README.md
+├── LICENSE
+└── requirements.txt
 ```
 ---
 
