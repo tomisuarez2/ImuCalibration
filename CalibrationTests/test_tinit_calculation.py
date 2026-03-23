@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from ImuCalibrationModules import imu_calibration as imu
-from ImuCalibrationModules.utils import extract_imu_data
+from ImuCalibrationModules.utils import extract_imu_data, show_loglog_data
 
 plt.style.use("seaborn-whitegrid")
 plt.rcParams['font.family'] = 'Times New Roman'
@@ -34,21 +34,29 @@ avar_norm = np.linalg.norm(avar, axis=1)
 # Time interval with the least variance norm
 t_init = tau[np.argmin(avar_norm)]
 
-# Visualization
-plt.semilogx(tau, avar)
 if spanish:
     print(f">>> Número de muestras en el archivo de mediciones para calibración: {n_samples}")
     print(f">>> Longitud del intervalo de inicialización de la IMU recomendado: {t_init} s")
-    plt.title("Varianza de Allan de la medición sin procesar del giroscopio")
-    plt.xlabel("Longitud del intervalo temporal [s]")
-    plt.ylabel("Varianza de Allan [-]")
-    plt.legend(["Varianza de Allan medición eje X", "Varianza de Allan medición eje Y", "Varianza de Allan medición eje Z"])
+    show_loglog_data(
+            tau,
+            avar_norm,
+            fs=samp_freq,
+            legend=["Varianza de Allan norma giroscopio"],
+            xlabel="Longitud del intervalo temporal [s]",
+            ylabel="Varianza de Allan [-]",
+            title="Varianza de Allan de la medición sin procesar del giroscopio",
+            spanish=spanish
+        )
 else:
     print(f">>> Number of samples in the calibration data file: {n_samples}")
     print(f">>> Recommended time interval length for IMU initialization: {t_init} s")
-    plt.title("Allan Variance of Raw Gyroscope Data")
-    plt.xlabel("Interval Length [s]")
-    plt.ylabel("Allan Variance [-]")
-    plt.legend(["Allan Variance X axis", "Allan Variance Y axis", "Allan Variance Z axis"])
-plt.grid(True, which="both")
-plt.show()
+    show_loglog_data(
+            tau,
+            avar_norm,
+            fs=samp_freq,
+            legend=["Allan Variance gyroscope norm"],
+            xlabel="Interval Length [s]",
+            ylabel="Allan Variance [-]",
+            title="Allan Variance of Raw Gyroscope Data",
+            spanish=spanish
+        )

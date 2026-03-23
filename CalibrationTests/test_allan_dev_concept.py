@@ -8,7 +8,7 @@ import numpy as np
 from ImuCalibrationModules import imu_calibration as imu
 from ImuCalibrationModules.utils import extract_imu_data, show_time_data
 
-spanish = True
+spanish = False
 
 # Number of samples
 n_samples = 5000000
@@ -31,9 +31,9 @@ syn_a_dev = syn_a_dev.reshape(-1)
 syn_tau = syn_tau.reshape(-1)
 
 if spanish:
-    show_time_data(syn_data, sampling_freq, legend=["Datos"], xlabel="Tiempo [s]", ylabel="[u]", title="Datos sintéticos")
+    show_time_data(syn_data[0:4000], sampling_freq, legend=["Datos"], xlabel="Tiempo [s]", ylabel="[u]", title="Datos sintéticos")
 else:   
-    show_time_data(syn_data, sampling_freq, legend=["Data"], ylabel="[u]", title="Synthetic data")
+    show_time_data(syn_data[0:4000], sampling_freq, legend=["Data"], ylabel="[u]", title="Synthetic data")
 
 if spanish:
     plot_titles = 'Desviación de Allan'

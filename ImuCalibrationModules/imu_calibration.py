@@ -16,6 +16,9 @@ from scipy.stats import linregress
 
 from . import utils
 
+plt.style.use('seaborn-whitegrid')
+plt.rcParams['font.family'] = 'Times New Roman'
+
 #===========================================================
 #----------Functions for synthetic data generation----------
 #===========================================================
@@ -119,7 +122,7 @@ def compute_allan_variance(
 def auto_estimate_R_q_from_allan(
     tau: np.ndarray, 
     sigma: np.ndarray, 
-    fs: np.float,
+    fs: float,
     slope_tol: float=0.1, 
     min_points: int=4,
     plot: bool=False,
@@ -222,16 +225,44 @@ def auto_estimate_R_q_from_allan(
         q, tau_rw = np.nan, None
 
     if plot:
+        curves = [sigma]
+        legends = []
+
         if spanish:
-            plot_legend = ["Desviación de Allan de la medición del sensor","Pendiente Ruido Blanco Gaussiano","Pendiente Deriva Aleatoria del Sesgo"]
-            plot_xlabel = "Duración del intervalo [s]"
-            plot_ylabel = f"Desviación de Allan de la señal del sensor [{u}]"
-        else:   
-            plot_legend = ["Sensor measurement Allan Dev.","White-Gaussian Noise slope","Random-Walk bias slope"]
-            plot_xlabel = "Interval Length [s]"
-            plot_ylabel = f"Sensor signal Allan deviation [{u}]"
-        utils.show_loglog_data(tau, np.vstack([sigma,np.sqrt(R/fs)/np.sqrt(tau),np.sqrt(q/3)*np.sqrt(tau)]).T, 
-                               legend=plot_legend, xlabel=plot_xlabel, ylabel=plot_ylabel, title=title)
+            legends.append("Desviación de Allan de la medición del sensor")
+            xlabel = "Duración del intervalo [s]"
+            ylabel = f"Desviación de Allan de la señal del sensor [{u}]"
+        else:
+            legends.append("Sensor measurement Allan Dev.")
+            xlabel = "Interval Length [s]"
+            ylabel = f"Sensor signal Allan deviation [{u}]"
+
+        # White noise
+        if not np.isnan(R):
+            curves.append(np.sqrt(R/fs)/np.sqrt(tau))
+            if spanish:
+                legends.append("Pendiente Ruido Blanco Gaussiano")
+            else:
+                legends.append("White-Gaussian Noise slope")
+
+        # Random walk
+        if not np.isnan(q):
+            curves.append(np.sqrt(q/3)*np.sqrt(tau))
+            if spanish:
+                legends.append("Pendiente Deriva Aleatoria del Sesgo")
+            else:
+                legends.append("Random-Walk bias slope")
+
+        utils.show_loglog_data(
+            tau,
+            np.vstack(curves).T,
+            fs=fs,
+            legend=legends,
+            xlabel=xlabel,
+            ylabel=ylabel,
+            title=title,
+            spanish=spanish
+        )
 
     return R, q, tau_white, tau_rw
 
@@ -717,10 +748,7 @@ def calibrate_imu_from_data(
     else:
         print(">>> Accelerometer calibration in progress...")
     # Optimized acceleromater calibration parameters
-    params_acc, (starts, ends) = calibrate_accel_from_data(t_init, t_wait,
-                                                           raw_accel_data, fs,
-                                                           theta_init_acc, g,
-                                                           n_iteration)
+    params_acc, (starts, ends) = calibrate_accel_from_data(t_init, t_wait, raw_accel_data, fs, theta_init_acc, g, n_iteration)
     #params_acc = np.array([1.043860522409845042e-05,2.098452816658057195e-06,2.005985606930172646e-06,6.020083400010406817e-04,5.968449488725015338e-04,5.859241382355084718e-04,-7.115163422327075295e+02,3.585054836108664063e+02,1.840128451085784491e+03])
     #starts = np.array([150,4297,4934,5585,6205,7018,7570,8297,9094,9662])
     #ends = np.array([3613,4299,4946,5690,6368,7046,7765,8457,9158,10095])
@@ -739,9 +767,7 @@ def calibrate_imu_from_data(
     else:
         print(">>> Gyroscope calibration in progress...")
     # Optimized gyroscope calibration parameters
-    params_gyro = calibrate_gyro_from_data(t_init, calibrated_accel_avg_data,
-                                           raw_gyro_data, fs, starts,
-                                           ends, theta_init_gyro)
+    params_gyro = calibrate_gyro_from_data(t_init, calibrated_accel_avg_data, raw_gyro_data, fs, starts, ends, theta_init_gyro)
     #params_gyro = np.array([-0.00996739,0.00918384,-0.0029122,0.00723488,-0.00984196,0.00579592,0.00013737,0.00013292,0.00013394,-427.46176147,147.94793701,-80.72266388])
     if spanish:
         print(">>> Calibración del giroscopio finalizada")

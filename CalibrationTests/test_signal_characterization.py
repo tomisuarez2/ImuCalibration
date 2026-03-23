@@ -8,10 +8,10 @@ import numpy as np
 from ImuCalibrationModules import imu_calibration as imu
 from ImuCalibrationModules.utils import extract_imu_data, show_time_data
 
-spanish = True
+spanish = False
 
 # Save data flag
-save = False
+save = True
 
 # Read data
 file_name = "characterization data/imu_static_data_6h.csv" 
@@ -28,14 +28,6 @@ raw_gyro_data = imu_data[:,3:]
 
 cal_accel_data = imu.apply_accel_calibration(params_acc, raw_accel_data)
 cal_gyro_data = imu.apply_gyro_calibration(params_gyro[:9], raw_gyro_data - params_gyro[9:])
-
-# Recorded data
-if spanish:
-    show_time_data(cal_accel_data, sampling_freq, ["Eje X", "Eje Y", "Eje Z"], xlabel="Tiempo [s]", ylabel="[m/s^2]", title="Datos del acelerómetro")
-    show_time_data(cal_gyro_data, sampling_freq, ["Eje X", "Eje Y", "Eje Z"], xlabel="Tiempo [s]", ylabel="[rad/s]", title="Datos del giróscopo")
-else:   
-    show_time_data(cal_accel_data, sampling_freq, ["X axis", "Y axis", "Z axis"], ylabel="[m/s^2]", title="Accelerometer data")
-    show_time_data(cal_gyro_data, sampling_freq, ["X axis", "Y axis", "Z axis"], ylabel="[rad/s]", title="Gyroscope data")
 
 time_vector = np.arange(0, n_samples, 1) / sampling_freq
 
@@ -110,19 +102,19 @@ sim_data_gy = imu.simulate_sensor_data(n_samples, sampling_freq, R_gy, q_gy, np.
 sim_data_gz = imu.simulate_sensor_data(n_samples, sampling_freq, R_gz, q_gz, np.mean(cal_gyro_data[:,2]))
 
 if spanish:
-    show_time_data(np.vstack([cal_accel_data[:,0], sim_data_ax]).T, sampling_freq, ["Señal Eje X medida", "Señal Eje X Simulada"], xlabel="Tiempo [s]", ylabel="Medicion acelerometro [m/s^2]", title="Datos del sensor")
-    show_time_data(np.vstack([cal_accel_data[:,1], sim_data_ay]).T, sampling_freq, ["Señal Eje Y medida", "Señal Eje Y Simulada"], xlabel="Tiempo [s]", ylabel="Medicion acelerometro [m/s^2]", title="Datos del sensor")
-    show_time_data(np.vstack([cal_accel_data[:,2], sim_data_az]).T, sampling_freq, ["Señal Eje Z medida", "Señal Eje Z Simulada"], xlabel="Tiempo [s]", ylabel="Medicion acelerometro [m/s^2]", title="Datos del sensor")
-    show_time_data(np.vstack([cal_gyro_data[:,0], sim_data_gx]).T, sampling_freq, ["Señal Eje X medida", "Señal Eje X Simulada"], xlabel="Tiempo [s]", ylabel="Medicion giroscopio [rad/s]", title="Datos del sensor")
-    show_time_data(np.vstack([cal_gyro_data[:,1], sim_data_gy]).T, sampling_freq, ["Señal Eje Y medida", "Señal Eje Y Simulada"], xlabel="Tiempo [s]", ylabel="Medicion giroscopio [rad/s]", title="Datos del sensor")
-    show_time_data(np.vstack([cal_gyro_data[:,2], sim_data_gz]).T, sampling_freq, ["Señal Eje Z medida", "Señal Eje Z Simulada"], xlabel="Tiempo [s]", ylabel="Medicion giroscopio [rad/s]", title="Datos del sensor")
+    show_time_data(np.vstack([cal_accel_data[:4000,0], sim_data_ax[:4000]]).T, sampling_freq, ["Señal Eje X medida", "Señal Eje X Simulada"], xlabel="Tiempo [s]", ylabel="Medicion acelerometro [m/s^2]", title="Datos del sensor")
+    show_time_data(np.vstack([cal_accel_data[:4000,1], sim_data_ay[:4000]]).T, sampling_freq, ["Señal Eje Y medida", "Señal Eje Y Simulada"], xlabel="Tiempo [s]", ylabel="Medicion acelerometro [m/s^2]", title="Datos del sensor")
+    show_time_data(np.vstack([cal_accel_data[:4000,2], sim_data_az[:4000]]).T, sampling_freq, ["Señal Eje Z medida", "Señal Eje Z Simulada"], xlabel="Tiempo [s]", ylabel="Medicion acelerometro [m/s^2]", title="Datos del sensor")
+    show_time_data(np.vstack([cal_gyro_data[:4000,0], sim_data_gx[:4000]]).T, sampling_freq, ["Señal Eje X medida", "Señal Eje X Simulada"], xlabel="Tiempo [s]", ylabel="Medicion giroscopio [rad/s]", title="Datos del sensor")
+    show_time_data(np.vstack([cal_gyro_data[:4000,1], sim_data_gy[:4000]]).T, sampling_freq, ["Señal Eje Y medida", "Señal Eje Y Simulada"], xlabel="Tiempo [s]", ylabel="Medicion giroscopio [rad/s]", title="Datos del sensor")
+    show_time_data(np.vstack([cal_gyro_data[:4000,2], sim_data_gz[:4000]]).T, sampling_freq, ["Señal Eje Z medida", "Señal Eje Z Simulada"], xlabel="Tiempo [s]", ylabel="Medicion giroscopio [rad/s]", title="Datos del sensor")
 else:
-    show_time_data(np.vstack([cal_accel_data[:,0], sim_data_ax]).T, sampling_freq, ["Logged X axis Signal", "Simulated X axis Signal"], ylabel="Accelerometer data [m/s^2]")
-    show_time_data(np.vstack([cal_accel_data[:,1], sim_data_ay]).T, sampling_freq, ["Logged Y axis Signal", "Simulated Y axis Signal"], ylabel="Accelerometer data [m/s^2]")
-    show_time_data(np.vstack([cal_accel_data[:,2], sim_data_az]).T, sampling_freq, ["Logged Z axis Signal", "Simulated Z axis Signal"], ylabel="Accelerometer data [m/s^2]")
-    show_time_data(np.vstack([cal_gyro_data[:,0], sim_data_gx]).T, sampling_freq, ["Logged X axis Signal", "Simulated X axis Signal"], ylabel="Giroscope data [rad/s]")
-    show_time_data(np.vstack([cal_gyro_data[:,1], sim_data_gy]).T, sampling_freq, ["Logged Y axis Signal", "Simulated Y axis Signal"], ylabel="Giroscope data [rad/s]")
-    show_time_data(np.vstack([cal_gyro_data[:,2], sim_data_gz]).T, sampling_freq, ["Logged Z axis Signal", "Simulated Z axis Signal"], ylabel="Giroscope data [rad/s]")
+    show_time_data(np.vstack([cal_accel_data[:4000,0], sim_data_ax[:4000]]).T, sampling_freq, ["Logged X axis Signal", "Simulated X axis Signal"], ylabel="Accelerometer data [m/s^2]")
+    show_time_data(np.vstack([cal_accel_data[:4000,1], sim_data_ay[:4000]]).T, sampling_freq, ["Logged Y axis Signal", "Simulated Y axis Signal"], ylabel="Accelerometer data [m/s^2]")
+    show_time_data(np.vstack([cal_accel_data[:4000,2], sim_data_az[:4000]]).T, sampling_freq, ["Logged Z axis Signal", "Simulated Z axis Signal"], ylabel="Accelerometer data [m/s^2]")
+    show_time_data(np.vstack([cal_gyro_data[:4000,0], sim_data_gx[:4000]]).T, sampling_freq, ["Logged X axis Signal", "Simulated X axis Signal"], ylabel="Giroscope data [rad/s]")
+    show_time_data(np.vstack([cal_gyro_data[:4000,1], sim_data_gy[:4000]]).T, sampling_freq, ["Logged Y axis Signal", "Simulated Y axis Signal"], ylabel="Giroscope data [rad/s]")
+    show_time_data(np.vstack([cal_gyro_data[:4000,2], sim_data_gz[:4000]]).T, sampling_freq, ["Logged Z axis Signal", "Simulated Z axis Signal"], ylabel="Giroscope data [rad/s]")
 
 
 

@@ -336,33 +336,85 @@ def integrate_quaternion(
 def show_loglog_data(
     x_data: np.ndarray,
     y_data: np.ndarray, 
+    fs: Union[int,float],
     legend: str,
     xlabel: str,
     ylabel: str,
     title: str,
+    spanish: bool=False
 ) -> None:
     """
     Show data plot in double logaritmic axes.
 
     Args:
-        x_data: X data plot.
-        y_data: Y data plot.
+        x_data: Data array of shape (N,M) where N is number of samples and M the numer of curves.
+        y_data: Data array of shape (N,M) where N is number of samples and M the numer of curves.
+        fs: Sampling rate in Hz.
         legend: Data legend.
         xlabel: X axis label.
         ylabel: Y axis label.
         title: Figure title.
+        spanish: Spanish comments.
 
     Returns:
         None
     """
 
     # Visualization
-    plt.loglog(x_data, y_data)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
-    plt.legend(legend)
-    plt.title(title)
-    plt.grid(True, which="both")
+    _, ax1 = plt.subplots(figsize=(14, 7))
+
+    def tau_to_samples(tau):
+        return tau * fs
+
+    def samples_to_tau(N):
+        return N / fs
+
+    lines = ax1.loglog(x_data, y_data, linewidth=0.8)
+    for line, label in zip(lines, legend):
+        line.set_label(label)
+    ax1.grid(True, which='major', linestyle='-', linewidth=0.8)
+    ax1.grid(True, which='minor', linestyle='--', linewidth=0.5, alpha=0.7)
+    ax1.set_xlabel(xlabel, fontsize=14)
+    ax1.set_ylabel(ylabel, fontsize=14)
+    ax1.set_title(title, fontsize=18, fontweight='bold', pad=15)
+    secax = ax1.secondary_xaxis(
+        'top',
+        functions=(tau_to_samples, samples_to_tau)
+    )
+
+    if spanish:
+        secax_label = "Número de muestras"
+    else:
+        secax_label = "Number of Samples"
+    secax.set_xlabel(secax_label, fontsize=14)
+    handles, _ = ax1.get_legend_handles_labels()
+    ax1.legend(
+        handles=handles,
+        fontsize=14,
+        loc="best",
+        frameon=True,        
+        fancybox=False,     
+        framealpha=1.0,      
+        edgecolor='black',  
+        facecolor='white'   
+    )
+    secax.tick_params(
+        axis='x',
+        which='major',
+        direction='in',
+        length=6,
+        width=1.2,
+        labelsize=14
+    )
+    ax1.tick_params(
+        axis='both',
+        which='major',
+        direction='in',
+        length=6,
+        width=1.2,
+        labelsize=14
+    )
+    plt.tight_layout()
     plt.show()
 
 def show_time_data(
@@ -392,17 +444,53 @@ def show_time_data(
     # Time vector
     time_vector = np.arange(0, n_samples, 1) / fs
 
-    # Completed barometer data over time
     _, ax1 = plt.subplots(figsize=(12, 7))
-    ax1.plot(time_vector, data)
+    lines = ax1.plot(time_vector, data, linewidth=1)
+    for line, label in zip(lines, legend):
+        line.set_label(label)
     ax1.grid(True)
-    ax1.set_xlabel(xlabel)
-    ax1.set_ylabel(ylabel)
-    ax1.set_title(title)
-    ax1.legend(legend)
+    ax1.set_xlabel(xlabel, fontsize=14)
+    ax1.set_xlim(time_vector[0], time_vector[-1])
+    ax1.set_ylabel(ylabel, fontsize=14)
+    ax1.set_title(title, fontsize=18, fontweight='bold', pad=15)
+    handles, _ = ax1.get_legend_handles_labels()
+    ax1.legend(
+        handles=handles,
+        fontsize=12,
+        loc="best",
+        frameon=True,        
+        fancybox=False,     
+        framealpha=1.0,      
+        edgecolor='black',  
+        facecolor='white'   
+    )
+    ax1.tick_params(
+        axis='both',
+        which='major',
+        direction='in',
+        length=6,
+        width=1.2,
+        labelsize=14
+    )
 
     plt.show()
-    
+
+def compute_pitch_roll_from_acc(
+    norm_static_acc: np.ndarray,
+) -> np.ndarray:
+    """
+    Compute pitch angle and roll angle from normalized static accelerometer measurement.
+
+    Args:
+        norm_static_acc: Normalized static accelerometer measurement array of shape (N,3) where N is number of samples.
+
+    Returns:
+        Numpy array containing [pitch_angles[deg],roll_angles[deg]]
+    """
+    pitch = np.arcsin(norm_static_acc[:,0])
+    roll = -np.arcsin(norm_static_acc[:,1]/np.cos(pitch))
+
+    return np.hstack([pitch.reshape(-1,1)*180.0/np.pi, roll.reshape(-1,1)*180.0/np.pi])
 
     
 
