@@ -33,6 +33,7 @@ time_vector = np.arange(0, n_samples, 1) / sampling_freq
 
 # Compute Allan Variance
 acc_tau, acc_avar = imu.compute_allan_variance(cal_accel_data, sampling_freq, m_steps='exponential')
+print(acc_tau)
 acc_a_dev = np.sqrt(acc_avar)
 
 gyro_tau, gyro_avar = imu.compute_allan_variance(cal_gyro_data, sampling_freq, m_steps='exponential')

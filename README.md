@@ -1,102 +1,353 @@
-# 🧭 IMU Auto Calibration Module (MPU-6050)
+# IMU Calibration & Characterization Toolbox
 
-This project implements an automatic calibration method for Inertial Measurement Units (IMUs), based on the paper:
+**An experimental toolbox for IMU parameter identification, calibration, and stochastic sensor characterization.**
 
-> **A Robust and Easy to Implement Method for IMU Calibration without External Equipments**
-> Daniele Tedaldi, Andrea Pretto, Emanuele Menegatti – *IEEE ICRA 2014*
+This project provides a collection of tools for working with experimental IMU data, using a low-cost **MPU-6050** as the main case study.
 
-The method is designed for low-cost IMUs like the **MPU-6050**, and requires **no external equipment**. It detects static data segments automatically and estimates sensor biases and calibration matrices.
+The toolbox was developed as a practical application of concepts from **estimation theory, numerical optimization, system identification, and stochastic process characterization**.
 
-It also provides tools to **characterize and analyze the noise of all the imu sensors** using Allan Deviation analysis.
-
----
-
-## 📌 Summary
-
-- ✅ Fully automatic calibration and signal characterization (no user interaction)
-- ✅ Detects static windows in raw IMU data
-- ✅ Estimates:
-  - Gyroscope biases, missalignment and scaling matrices
-  - Accelerometer offsets, missalignment and scaling matrices
-  - Sensor measurement noises 
-- ✅ Plots and tools to validate calibration
-- ✅ Written in clean, modular Python
+The main objective is not only to calibrate a sensor, but to explore how **experimental measurements can be used to identify the parameters of a sensor error model and characterize the stochastic behavior that remains after calibration**.
 
 ---
 
-## 👨‍💻 Authors
+## Overview
 
-**Tomás Suárez, Agustín Corazza, Rodrigo Pérez**
-Mechatronics Engineering Students
-Universidad Nacional de Cuyo
-📧 suareztomasm@gmail.com
-📧 corazzaagustin@gmail.com
-📧 rodrigoperez2110@gmail.com
+Real IMUs exhibit both **systematic** and **stochastic** measurement errors.
+
+A simplified view of the experimental process implemented in this project is:
+
+```text
+              Experimental measurements
+                        │
+                        ▼
+                  Raw IMU data
+                        │
+             ┌──────────┴──────────┐
+             │                     │
+             ▼                     ▼
+      Systematic errors      Stochastic errors
+             │                     │
+             ▼                     ▼
+     Parameter estimation    Allan variance
+             │                     │
+             ▼                     ▼
+       Optimization          Noise characterization
+             │                     │
+             └──────────┬──────────┘
+                        ▼
+             Calibrated & characterized
+                        IMU
+```
+
+The toolbox therefore addresses two complementary problems:
+
+### 1. Deterministic parameter identification
+
+The calibration process estimates parameters associated with systematic errors, including:
+
+- Sensor biases
+- Scale factors
+- Axis misalignment
+- Calibration parameters for the accelerometer and gyroscope
+
+The parameters are obtained by formulating the calibration problem as a nonlinear optimization problem and solving it using the **Levenberg–Marquardt algorithm**.
+
+### 2. Stochastic sensor characterization
+
+After accounting for systematic errors, the remaining measurement behavior can be studied statistically.
+
+The toolbox includes **Allan variance / Allan deviation** analysis to characterize properties of sensor noise and bias instability over different averaging times.
+
+This provides a way of connecting experimental sensor data with stochastic models used in estimation and navigation applications.
 
 ---
 
-## 📁 Project Structure
+## Toolbox Contents
+
+The repository is organized around the complete experimental workflow:
+
+```text
+Raw sensor data
+      │
+      ├── Data acquisition
+      │
+      ├── Static interval detection
+      │
+      ├── Calibration
+      │      ├── Accelerometer
+      │      └── Gyroscope
+      │
+      ├── Optimization
+      │
+      ├── Calibration validation
+      │
+      └── Stochastic characterization
+             └── Allan variance / deviation
+```
+
+The repository contains:
+
+- IMU calibration algorithms
+- Automatic detection of static measurements
+- Accelerometer calibration
+- Gyroscope calibration
+- Nonlinear parameter optimization
+- Quaternion-based numerical integration
+- Allan variance / Allan deviation analysis
+- Experimental datasets
+- Calibration and characterization results
+- Visualization and analysis tools
+- Arduino code for MPU-6050 data acquisition
+- Supporting theoretical material
+
+---
+
+# Calibration
+
+## Sensor Error Model
+
+The calibration procedure is based on the error models described by Tedaldi, Pretto and Menegatti.
+
+Real IMUs can exhibit effects such as:
+
+- Non-zero biases
+- Different scale factors between axes
+- Non-orthogonality between sensing axes
+- Measurement noise
+
+The calibration procedure estimates the deterministic parameters of these models from experimental measurements.
+
+For the accelerometer, the sensor is placed in different static orientations. Since the magnitude of the gravitational acceleration is known, the measurements provide constraints from which the calibration parameters can be identified.
+
+For the gyroscope, the calibration depends on the calibrated accelerometer. Angular-rate measurements are integrated and compared through the corresponding changes in the measured gravity direction.
+
+---
+
+## Parameter Estimation
+
+Rather than assigning calibration parameters manually, the toolbox formulates calibration as a parameter estimation problem.
+
+In general terms:
+
+```text
+Experimental data
+       │
+       ▼
+Sensor error model
+       │
+       ▼
+Parameter vector
+       │
+       ▼
+Cost function
+       │
+       ▼
+Nonlinear optimization
+       │
+       ▼
+Estimated calibration parameters
+```
+
+The calibration parameters are estimated by minimizing a nonlinear cost function using **Levenberg–Marquardt** optimization.
+
+This makes the project a practical example of parameter identification from experimental data.
+
+---
+
+## Experimental Procedure
+
+The calibration does not require an external calibration device.
+
+The required data can be obtained by manually placing the IMU in different static orientations.
+
+The general procedure is:
+
+1. Acquire raw accelerometer and gyroscope measurements.
+2. Detect static intervals in the data.
+3. Estimate representative measurements for each static interval.
+4. Estimate accelerometer calibration parameters.
+5. Use the calibrated accelerometer to support gyroscope calibration.
+6. Estimate gyroscope calibration parameters.
+7. Validate the resulting calibration using experimental data.
+
+The method requires sufficiently diverse orientations for the parameters to be observable. The reference paper recommends collecting approximately **36–50 different static attitudes**.
+
+---
+
+# Automatic Static Detection
+
+Static intervals are required during the calibration procedure.
+
+The toolbox includes an automatic static detector based on the statistical behavior of the measured signal.
+
+This allows the calibration process to operate on experimental datasets without requiring every static interval to be manually selected.
+
+---
+
+# Quaternion Integration
+
+Gyroscope calibration requires integrating angular velocity measurements.
+
+The toolbox implements quaternion-based attitude propagation using a **fourth-order Runge–Kutta integration scheme**.
+
+The quaternion is normalized during the integration process to maintain a valid attitude representation.
+
+This provides an additional practical application of:
+
+- Quaternion kinematics
+- Numerical integration
+- Rigid-body attitude representation
+
+---
+
+# Stochastic Characterization
+
+Calibration removes or reduces deterministic errors, but it does not make the sensor perfect.
+
+The remaining error contains stochastic components that are important when the sensor is later used in applications such as:
+
+- State estimation
+- Sensor fusion
+- Inertial navigation
+- Robotics
+- Guidance, Navigation and Control
+
+For this reason, the toolbox also includes tools for **stochastic characterization**.
+
+## Allan Variance
+
+The **Allan variance** is computed from sensor time-series data to study how the statistical behavior of the measurements changes with averaging time.
+
+Its square root, the **Allan deviation**, provides a convenient representation of the same analysis.
+
+The resulting curves can be used to identify different noise behaviors and to obtain parameters useful for stochastic sensor models.
+
+Conceptually:
+
+```text
+Sensor time series
+       │
+       ▼
+ Allan variance
+       │
+       ▼
+Allan deviation
+       │
+       ▼
+Noise characteristics
+       │
+       ▼
+Stochastic sensor model
+```
+
+This part of the project complements calibration: while calibration focuses primarily on **deterministic parameter estimation**, Allan analysis focuses on the **statistical characterization of measurement errors**.
+
+---
+
+# Why This Project?
+
+The project was developed as an experimental exercise in applying estimation and optimization concepts to a real physical system.
+
+Instead of considering calibration only as a collection of correction equations, the approach is treated as an estimation problem:
+
+> **Given experimental measurements and a model of the sensor, can the unknown parameters of that model be estimated from the data?**
+
+This involves several important concepts:
+
+| Concept                  | Application                          |
+| ------------------------ | ------------------------------------ |
+| System modeling          | IMU measurement error models         |
+| Experimental design      | Selection of static orientations     |
+| Parameter identification | Estimation of calibration parameters |
+| Nonlinear optimization   | Levenberg–Marquardt                  |
+| Numerical methods        | Quaternion integration               |
+| Statistical analysis     | Sensor noise characterization        |
+| Allan variance           | Stochastic error analysis            |
+| Experimental validation  | Evaluation using real measurements   |
+
+One of the main lessons from the project is that **optimization convergence alone does not guarantee a physically meaningful identification**. The quality and diversity of the experimental data, the chosen model, and the observability of its parameters are equally important.
+
+---
+
+# Data Acquisition
+
+Experimental data can be acquired using the included Arduino code and an **MPU-6050**.
+
+The acquisition setup provides:
+
+- Accelerometer measurements
+- Gyroscope measurements
+- Approximately 100 Hz sampling frequency by default
+- Data-ready synchronization
+- CSV-compatible output
+
+The recorded measurements follow the format:
+
+```text
+ax, ay, az, gx, gy, gz
+```
+
+The resulting datasets can then be processed by the Python toolbox.
+
+---
+
+# Repository Structure
 
 ```text
 ImuCalibration/
-├── arduino code/
-│   ├── connection.jpeg          # Wiring diagram
-│   ├── MPU6050_raw.ino          # Arduino firmware for raw data collection
-│   ├── MPU6050.pdf              # Datasheet
-│   └── MPU-6000-Register.pdf    # Register map
-├── ImuCalibrationModules/
-│   ├── imu_calibration.py       # Main calibration logic
-│   └── utils.py                 # Helper functions and data loaders
+│
 ├── CalibrationTests/
-│   ├── test_accel_calibration.py
-│   ├── test_gyro_calibration.py
-│   ├── test_complete_imu_calibration.py
-│   └── ...                      # Additional test scripts
+│   └── Calibration and validation experiments
+│
+├── ImuCalibrationModules/
+│   └── Calibration and characterization toolbox
+│
+├── arduino code/
+│   └── MPU-6050 data acquisition
+│
 ├── calibration data/
-│   ├── example_data_calibration.csv      # Raw IMU data for calibration
-│   └── example_data_tinit_calc.csv       # Static data for initial time calculation
-├── optimization result data/
-│   ├── params_acc.csv           # Accelerometer calibration parameters
-│   ├── params_gyro.csv          # Gyroscope calibration parameters
-│   └── static_intervals.csv     # Detected static intervals
+│   └── Experimental calibration datasets
+│
+├── characterization data/
+│   └── Sensor characterization datasets
+│
+├── characterization result data/
+│   └── Characterization results
+│
+├── characterization result images/
+│   └── Characterization plots
+│
 ├── optimization result images/
-│   ├── cal_accel.png            # Calibrated acceleration data
-│   ├── cal_ang_vel.png          # Calibrated angular velocity
-│   ├── non_cal_accel.png        # Raw acceleration data
-│   └── non_cal_ang_vel.png      # Raw angular velocity data
-├── characterization data/        # Static data for noise analysis
-├── theory/                       # Reference materials
-├── README.md
-├── LICENSE
-└── requirements.txt
+│   └── Optimization results and plots
+│
+├── results test data/
+│   └── Experimental validation data
+│
+└── theory/
+    └── Supporting theoretical material
 ```
+
 ---
 
-## 🚀 Quick Start
+# Quick Start
 
-### 1. 📥 Clone the Repository
+Clone the repository and install the required Python packages:
 
 ```bash
-git clone https://github.com/tomisuarez2/ImuCalibration
+git clone https://github.com/tomisuarez2/ImuCalibration.git
 cd ImuCalibration
-```
 
----
-
-### 2. 📦 Install Requirements
-
-```bash
 pip install -r requirements.txt
 ```
 
----
-
-### 3. ▶️ Run example tests (e.g. complete calibration test)
+The complete calibration workflow can then be executed with:
 
 ```bash
-cd ImuCalibration
 python -m CalibrationTests.test_complete_imu_calibration
 ```
+
+The repository also includes experimental datasets and generated results that can be used to explore the different stages of the toolbox.
+
 ---
 
 ## Example visualization
@@ -119,141 +370,9 @@ Gyroscope optimized missalignments: [-0.00996739  0.00918384 -0.0029122  0.00723
 
 ![gyro roll](optimization%20result%20images/gyro_roll.png)
 
----
 
-## 📈 Input Data Format
-
-The module expects a CSV file with the following columns:
-
-```bash
-ax, ay, az, gx, gy, gz
-```
-
-ax, ay, az: Accelerometer data (raw values)
-gx, gy, gz: Gyroscope data (raw values)
-
-Additional information such as sampling frequency, waiting time, number of moves and so on is also required.
-
----
-
-## 📟 Arduino sketch for MPU6050 UART communication
-
-To collect raw IMU data for calibration, this repository includes an Arduino sketch that interfaces with the **MPU-6050** sensor via I2C. The code configures the device to operate at a user-defined sampling frequency (default: 100 Hz), uses data-ready interrupts, and streams raw accelerometer and gyroscope readings over UART.
-
-### ⚙️ Features
-
-- Configurable sampling frequency via `SMPL_RT_FREQ` (default: 100 Hz)
-- I2C communication using `Wire` interface
-- Interrupt-based data acquisition (using pin D2)
-- Outputs raw data in **readable CSV format** or **compact binary format**
-- Blinks onboard LED as activity indicator
-
-### 🧾 Output Format
-
-By default, the output is a comma-separated string:
-
-```bash
-ax, ay, az, gx, gy, gz
-```
-
-ax, ay, az: Accelerometer data (raw values)
-gx, gy, gz: Gyroscope data (raw values)
-
-### 📦 Arduino Libraries Required
-
-- [`I2Cdev`](https://github.com/ElectronicCats/mpu6050/tree/master)
-- [`MPU6050`](https://github.com/ElectronicCats/mpu6050)
-
-To install the required libraries, download or clone them from the [ElectronicCats GitHub repository](https://github.com/ElectronicCats/mpu6050) and place them in your Arduino `libraries/` folder.
-
-### 👏 Acknowledgements
-
-This Arduino sketch is based on the excellent open-source library provided by [**Electronic Cats**](https://github.com/ElectronicCats/mpu6050).
-All rights and credits for the original `MPU6050` library belong to its authors.
-
----
-
-## 🧪 Validation
-
-The module includes tools to validate calibration by:
-
-Plotting acceleration norm (should converge to 9.81 m/s² in rest)
-
-Comparing gyroscope biases before/after
-
-Visualizing the static windows detected
-
-Showing n-point cloud of raw vs. calibrated accelerometer data
-
-All of this is included in the test examples.
-
----
-
-## ⚠️ Limitations
-
-Remember that **Levenberg-Marquardt** algorithm is a **local optimization** method, it converges to a local minimum, not necessarily the global one.
-
-This calibration algorithm requires sufficiently rich and diverse motion to ensure parameter observability.
-
-In particular:
-
-- The IMU must be rotated between all static intervals, with significant angular displacement around all three axes (X, Y, and Z).
-
-- Avoid repeating the same type of rotation (e.g., yaw-only). Instead, include:
-
-- Tilts (pitch/roll),
-
-- Twists (yaw),
-
-- Compound 3D rotations (diagonal movements or figure-eight patterns).
-
-At least 9 static orientations are required. Authors recommend 36–50 poses, each preceded by short, clean motions (1–4 seconds).
-
-Without sufficient motion excitation:
-
-- The gyroscope scale factors and misalignment parameters may become weakly observable.
-
-- This can lead to incorrect calibration results, such as negative scale factors or parameter ambiguity.
-
-- The optimizer may converge, but to a mathematically plausible yet physically incorrect solution.
-
-For best results:
-
-- Record data in a stable thermal environment.
-
-. Ensure the sensor is completely still during static intervals.
-
-- Visually inspect the gyroscope data to confirm motion diversity.
-
----
-
-## ⚙️ Signal characterization working principle
-
-The repository also implements a workflow to characterize IMU data:
-
-1. **Allan Deviation Analysis**
-
-   * From the altitude time series, Allan deviation (ADEV) is computed across multiple averaging times (τ).
-   * This reveals how different noise sources dominate at different time scales:
-
-     * **White noise (σ ∝ 1/√τ)**
-     * **Random walk bias (σ ∝ √τ)**
-
-2. **Noise Parameter Estimation**
-
-   * The slopes of the Allan deviation curve are fitted to extract:
-
-     * **R** → Measurement noise variance (white noise level).
-     * **q** → Random walk bias intensity.
-
-For a complete mathematical derivation, refer to theory folder.
-
----
-
-## 📊 Signal characterizatio example Output
-
-* **Allan deviation curve** with fitted slopes
-* Estimated noise parameters:
+- **Allan deviation curve** with fitted slopes
+- Estimated noise parameters:
 
  ```bash
 >>> Y axis accelerometer white measurement–noise variance [m^2/s^4]: 0.000927991675334452
@@ -261,7 +380,7 @@ For a complete mathematical derivation, refer to theory folder.
 >>> Y axis gyroscope white measurement–noise variance [rad^2/s^2]: 4.9340091913017585e-06
 >>> Y axis gyroscope bias random–walk intensity [rad^2/s^3]: nan
  ```
-* Visualization of white noise (−½ slope) and random walk (+½ slope) regions
+- Visualization of white noise (−½ slope) and random walk (+½ slope) regions
 
 ![Allan Deviation Plot](characterization%20result%20images/allan_dev_plot_ay.png)
 
@@ -275,34 +394,123 @@ It can be seen from above pictures that there is no apreciable random bias walk 
 
 ---
 
-## 📚 Citation
+# Validation
 
-If you use this module or code, please cite the original paper:
+Calibration results can be evaluated by comparing the behavior of the raw and calibrated measurements.
 
-Tedaldi, D., Pretto, A., & Menegatti, E. (2014).
-A Robust and Easy to Implement Method for IMU Calibration without External Equipments.
-In Proceedings of the IEEE International Conference on Robotics and Automation (ICRA), 3042–3049.
+The repository includes experimental results and visualization tools for examining:
+
+- Calibration residuals
+- Sensor measurements before and after calibration
+- Optimization results
+- Characterization results
+- Allan deviation curves
+
+The goal is to evaluate whether the identified parameters actually improve the physical consistency of the measurements rather than merely obtaining numerical convergence.
+
+---
+
+# Limitations
+
+The calibration procedure is subject to the limitations of the underlying model and experimental setup.
+
+In particular:
+
+- The optimization problem is nonlinear and solved using a local optimization method.
+- The quality of the solution depends on the initial parameter estimates.
+- The experimental dataset must contain sufficiently diverse orientations.
+- Static intervals must be correctly identified.
+- Sensor temperature can affect the measurements.
+- The calibration model does not necessarily capture every physical error present in a real IMU.
+
+The calibration method described in the reference paper recommends at least **nine different orientations for observability**, with approximately **36–50 distinct attitudes** recommended for practical calibration.
+
+---
+
+# Theoretical Background
+
+The project draws primarily from concepts in:
+
+- Estimation theory
+- Parameter identification
+- Nonlinear least-squares optimization
+- Sensor modeling
+- Quaternion kinematics
+- Numerical integration
+- Stochastic process characterization
+- Allan variance analysis
+
+The main theoretical reference used during development was:
+
+>**Optimal Estimation of Dynamic Systems**
+> Jhon L. Crassidis
+> Jhon L. Junkins
+
+The calibration methodology is based primarily on:
+
+> D. Tedaldi, A. Pretto, E. Menegatti,
+> *A Robust and Easy to Implement Method for IMU Calibration without External Equipments*,
+> IEEE International Conference on Robotics and Automation (ICRA), 2014.
+
+---
+
+# Reference
+
+```text
+Tedaldi, D., Pretto, A., Menegatti, E.
+"A Robust and Easy to Implement Method for IMU Calibration
+without External Equipments."
+IEEE International Conference on Robotics and Automation (ICRA), 2014.
 DOI: 10.1109/ICRA.2014.6907165
+```
 
 ---
 
-## 🤝 Contributing
+# Motivation
 
-Contributions are welcome!
-Fork, improve, and open a pull request 🚀
+This project was developed to bridge the gap between theoretical estimation methods and real experimental data.
 
-(Also check out our other related projects: [TimeOfFlightCalibration](https://github.com/tomisuarez2/TimeOfFlightCalibration), [MagnetometerCalibration](https://github.com/tomisuarez2/MagnetometerCalibration) and [BarometricAltimeterCalibration](https://github.com/tomisuarez2/BarometricAltimeterCalibration))
+A real sensor provides an opportunity to study the complete chain:
+
+```text
+Physical system
+      ↓
+Experimental measurement
+      ↓
+Mathematical model
+      ↓
+Parameter estimation
+      ↓
+Optimization
+      ↓
+Model validation
+      ↓
+Stochastic characterization
+```
+
+The same ideas form the basis of more advanced problems in **robotics, navigation, autonomous systems and Guidance, Navigation and Control (GNC)**.
 
 ---
 
-## 🛰️ Contact
+### Arduino Libraries Required
+
+- [`I2Cdev`](https://github.com/ElectronicCats/mpu6050/tree/master)
+- [`MPU6050`](https://github.com/ElectronicCats/mpu6050)
+
+To install the required libraries, download or clone them from the [ElectronicCats GitHub repository](https://github.com/ElectronicCats/mpu6050) and place them in your Arduino `libraries/` folder.
+
+---
+
+### Acknowledgements
+
+This Arduino sketch is based on the excellent open-source library provided by [**Electronic Cats**](https://github.com/ElectronicCats/mpu6050).
+All rights and credits for the original `MPU6050` library belong to its authors.
+
+---
+
+## Contact
 
 If you have questions or want to collaborate, feel free to reach out:
 **Tomás Suárez**
-Mechatronics Engineering Student
+Mechatronics Engineer
 📧 [suareztomasm@gmail.com](mailto:suareztomasm@gmail.com)
-
-
-
-
-
